@@ -1,39 +1,70 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 
+const B = (import.meta.env.BASE_URL || '/').replace(/\/$/, '');
+
 const TRACKS = {
-  intro: '/music/SVEAVÄGEN — Huvudtema.mp3',
-  map: '/music/NATTLIG KARTA — Kartvyn _ Utforskning.mp3',
-  mordplatsen: '/music/MORDPLATSEN — Sveavägen kl 23_21.mp3',
-  chat: '/music/VITTNESMÅL — Samtalstema.mp3',
-  board: '/music/UTREDNINGSTAVLAN — Detektiven kl 03_00.mp3',
-  engstrom: '/music/ENGSTRÖM-TEMAT — Obehaget.mp3',
-  sydafrika: '/music/SYDAFRIKASPÅRET — Internationell konspiration.mp3',
-  polis: '/music/POLISSPÅRET — Paranoia.mp3',
-  epilog: '/music/EPILOG — Olöst.mp3',
+  intro: B + '/music/SVEAVÄGEN — Huvudtema.mp3',
+  map: B + '/music/NATTLIG KARTA — Kartvyn _ Utforskning.mp3',
+  mordplatsen: B + '/music/MORDPLATSEN — Sveavägen kl 23_21.mp3',
+  chat: B + '/music/VITTNESMÅL — Samtalstema.mp3',
+  board: B + '/music/UTREDNINGSTAVLAN — Detektiven kl 03_00.mp3',
+  engstrom: B + '/music/ENGSTRÖM-TEMAT — Obehaget.mp3',
+  sydafrika: B + '/music/SYDAFRIKASPÅRET — Internationell konspiration.mp3',
+  polis: B + '/music/POLISSPÅRET — Paranoia.mp3',
+  epilog: B + '/music/EPILOG — Olöst.mp3',
+  kyrka: B + '/music/ADOLF FREDRIKS KYRKA — Sorgens eko.mp3',
+  kyrkogard: B + '/music/ADOLF FREDRIKS KYRKOGÅRD — Palmes grav.mp3',
+  cedergren: B + '/music/CEDERGRENS LÄGENHET — Sigges hemlighet.mp3',
+  david_bagare: B + '/music/DAVID BAGARES GATA — Skuggorna.mp3',
+  dekorima: B + '/music/DEKORIMAS DÖRRÖPPNING — Ögonblicket.mp3',
+  palmes_bostad: B + '/music/PALMES BOSTAD — Västerlånggatan.mp3',
+  grand: B + '/music/BIOGRAFEN GRAND — Sista filmen.mp3',
+  pkk: B + '/music/PKK-LOKALEN — Holmérs spår.mp3',
+  rosenbad: B + '/music/ROSENBAD — Makten.mp3',
+  sabbatsberg: B + '/music/SABBATSBERGS SJUKHUS — Sista andetaget.mp3',
+  skandia: B + '/music/SKANDIAS ENTRÉ — Väntan.mp3',
+  stay_behind: B + '/music/STAY BEHIND — Thulehuset.mp3',
+  taxi: B + '/music/TAXINS POSITION — Väntan vid ratten.mp3',
+  telefonkiosk: B + '/music/TELEFONKIOSKEN — Samtalet.mp3',
+  tunnelgatan: B + '/music/TUNNELGATAN — Flykten.mp3',
 };
 
-const STINGER = '/music/LEDTRÅD — Stinger.mp3';
+const STINGER = B + '/music/LEDTRÅD — Stinger.mp3';
 const FADE_MS = 1500;
 const FADE_STEP = 50;
 
-// Location IDs that map to special tracks
+// Location IDs that map to tracks (for both location view and chat)
 const LOCATION_TRACKS = {
-  mordplatsen: 'mordplatsen',
-  sveavagen_44: 'mordplatsen',
-  polishuset: 'polis',
-  sapo_huset: 'polis',
-  sydafrikanska_ambassaden: 'sydafrika',
+  murder_scene: 'mordplatsen',
+  dekorima_doorway: 'dekorima',
+  skandia_entrance: 'skandia',
+  taxi_position: 'taxi',
+  telefonkiosken: 'telefonkiosk',
+  tunnelgatan_stairs: 'tunnelgatan',
+  adolf_fredriks_church: 'kyrka',
+  adolf_fredriks_kyrkogard: 'kyrkogard',
+  cedergrens_lagenhet: 'cedergren',
+  david_bagares_gata: 'david_bagare',
+  gamla_stan_palmes_bostad: 'palmes_bostad',
+  grand_cinema: 'grand',
+  petterssons_bostad: 'engstrom',
+  rotebro_narkotikamiljon: 'engstrom',
+  pkk_lokalen: 'pkk',
+  polishuset_kungsholmen: 'polis',
+  rosenbad: 'rosenbad',
+  sabbatsberg_hospital: 'sabbatsberg',
+  stay_behind_thulehuset: 'stay_behind',
+  sydafrikanska_sparet: 'sydafrika',
 };
 
 export function resolveTrack(view, locationId) {
   if (view === 'intro') return 'intro';
   if (view === 'board') return 'board';
-  if (view === 'chat') return 'chat';
-  if (view === 'location' || view === 'map') {
+  if (view === 'chat' || view === 'location' || view === 'map') {
     if (locationId && LOCATION_TRACKS[locationId]) {
       return LOCATION_TRACKS[locationId];
     }
-    return 'map';
+    return view === 'chat' ? 'chat' : 'map';
   }
   return 'map';
 }

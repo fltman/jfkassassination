@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { fetchCharactersAtLocation } from '../lib/api';
+import { fetchCharactersAtLocation, ASSET_BASE } from '../lib/api';
 
 function ExpandableSummary({ text }) {
   const [expanded, setExpanded] = useState(false);
@@ -71,7 +71,7 @@ export default function LocationPanel({ locationId, locations, revealedNames = [
       {/* Location image */}
       <div className="relative h-48 shrink-0 overflow-hidden">
         <img
-          src={`/images/locations/${locationId}.png`}
+          src={`${ASSET_BASE}/images/locations/${locationId}.jpg`}
           alt={location.name}
           className="w-full h-full object-cover"
           onError={(e) => { e.target.style.display = 'none'; }}
@@ -114,7 +114,7 @@ export default function LocationPanel({ locationId, locations, revealedNames = [
                          hover:border-clue/50 hover:bg-noir-800/80 transition-all group flex items-center gap-3"
             >
               <img
-                src={`/images/characters/${char.id}.png`}
+                src={`${ASSET_BASE}/images/characters/${char.id}.jpg`}
                 alt=""
                 className="w-14 h-14 rounded-lg object-cover border border-noir-600 shrink-0"
                 onError={(e) => { e.target.style.display = 'none'; }}

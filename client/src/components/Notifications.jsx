@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { ASSET_BASE } from '../lib/api';
 
 export default function Notifications({ notifications, locations, onDismiss }) {
   return (
@@ -33,7 +34,7 @@ function Toast({ notification, locations, onDismiss }) {
                  animate-slide-up shadow-lg shadow-black/50 max-w-sm flex items-center gap-3"
     >
       <img
-        src={`/images/clues/${notification.clueId}.png`}
+        src={`${ASSET_BASE}/images/clues/${notification.clueId}.jpg`}
         alt=""
         className="w-16 h-16 object-cover shrink-0"
         onError={(e) => { e.target.style.display = 'none'; }}

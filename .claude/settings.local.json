@@ -12,7 +12,17 @@
       "Bash(ls:*)",
       "Bash(npm ls:*)",
       "Bash(git init:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(gh auth:*)",
+      "Bash(gh repo:*)",
+      "Bash(chmod +x:*)",
+      "Bash(git push:*)",
+      "Bash(bash:*)",
+      "Bash(sqlite3:*)",
+      "Bash(do cp:*)",
+      "Bash(rm:*)",
+      "Bash(cp:*)"
     ]
   }
 }

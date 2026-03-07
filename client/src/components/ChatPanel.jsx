@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { fetchCharacter, sendMessage, summarizeConversation } from '../lib/api';
+import { fetchCharacter, sendMessage, summarizeConversation, ASSET_BASE } from '../lib/api';
 
 function renderMarkdown(text) {
   const parts = [];
@@ -159,7 +159,7 @@ export default function ChatPanel({
       <div className="flex-shrink-0">
         <div className="relative">
           <img
-            src={`/images/characters/${characterId}.png`}
+            src={`${ASSET_BASE}/images/characters/${characterId}.jpg`}
             alt=""
             className="w-full h-48 object-cover portrait-pan"
             onError={(e) => { e.target.style.display = 'none'; }}

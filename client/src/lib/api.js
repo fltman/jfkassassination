@@ -1,4 +1,6 @@
-const BASE = '/api';
+// Detect base path: works both at root (/) and in subdirectories (/palme/)
+export const ASSET_BASE = (import.meta.env.BASE_URL || '/').replace(/\/$/, '');
+const BASE = ASSET_BASE + '/api';
 const API_KEY_STORAGE = 'palme_openrouter_key';
 
 export function getStoredApiKey() {
@@ -79,7 +81,7 @@ export async function loadPlayer(playerId) {
 
 export async function savePlayerState(playerId, state) {
   await fetch(`${BASE}/player/${playerId}/state`, {
-    method: 'PUT',
+    method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(state),
   });
@@ -87,7 +89,7 @@ export async function savePlayerState(playerId, state) {
 
 export async function saveConversation(playerId, characterId, messages) {
   await fetch(`${BASE}/player/${playerId}/conversation/${characterId}`, {
-    method: 'PUT',
+    method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ messages }),
   });
@@ -101,7 +103,7 @@ export async function loadBoard(playerId) {
 
 export async function saveBoard(playerId, data) {
   await fetch(`${BASE}/player/${playerId}/board`, {
-    method: 'PUT',
+    method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   });
@@ -116,7 +118,7 @@ export async function loadNotebook(playerId) {
 
 export async function saveNotebook(playerId, content) {
   await fetch(`${BASE}/player/${playerId}/notebook`, {
-    method: 'PUT',
+    method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ content }),
   });

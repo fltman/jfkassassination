@@ -1,3 +1,5 @@
+import { ASSET_BASE } from '../lib/api';
+
 export default function ClueLog({ clues, clueTypes, revealedClueIds, isOpen, onClose }) {
   const revealedClues = clues.filter(c => revealedClueIds.includes(c.id));
   const typeMap = {};
@@ -42,7 +44,7 @@ export default function ClueLog({ clues, clueTypes, revealedClueIds, isOpen, onC
                     style={{ borderColor: typeId === 'contradiction' ? '#7c3aed40' : '#27272a' }}
                   >
                     <img
-                      src={`/images/clues/${clue.id}.png`}
+                      src={`${ASSET_BASE}/images/clues/${clue.id}.jpg`}
                       alt={clue.title}
                       className="w-full h-24 object-cover"
                       onError={(e) => { e.target.style.display = 'none'; }}

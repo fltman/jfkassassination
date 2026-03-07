@@ -1,9 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { Html5Qrcode } from 'html5-qrcode';
+import { ASSET_BASE, getStoredApiKey, setStoredApiKey } from '../lib/api';
 
-export default function IntroScreen({ onStart, onResume, onDeletePlayer, savedPlayers = [], music }) {
+export default function IntroScreen({ onStart, onResume, onDeletePlayer, savedPlayers = [], music, needsApiKey }) {
   const [name, setName] = useState('');
+  const [apiKey, setApiKey] = useState(() => getStoredApiKey());
   const [players, setPlayers] = useState(savedPlayers);
   const [showQR, setShowQR] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
@@ -13,6 +15,7 @@ export default function IntroScreen({ onStart, onResume, onDeletePlayer, savedPl
 
   const handleStart = () => {
     if (!name.trim()) return;
+    if (needsApiKey && !getStoredApiKey()) return;
     onStart(name.trim());
   };
 
@@ -87,24 +90,24 @@ export default function IntroScreen({ onStart, onResume, onDeletePlayer, savedPl
   }, [scanning]);
 
   return (
-    <div className="h-screen bg-noir-950 relative">
+    <div className="h-screen bg-noir-950 relative overflow-hidden">
       <div
         className="fixed inset-0 bg-cover bg-center opacity-60"
-        style={{ backgroundImage: "url('/images/locations/murder_scene.png')" }}
+        style={{ backgroundImage: `url('${ASSET_BASE}/images/locations/murder_scene.jpg')` }}
       />
       <div className="fixed inset-0 bg-gradient-to-t from-noir-950 via-noir-950/90 to-noir-950/70" />
       <div className="relative z-10 h-full overflow-y-auto flex flex-col items-center justify-center px-6 py-10 text-center">
 
       <div className="space-y-4 relative z-10" style={{ textShadow: '0 2px 12px rgba(0,0,0,0.8), 0 0 4px rgba(0,0,0,0.6)' }}>
-        <p className="text-4xl md:text-6xl font-serif text-white">STOCKHOLM</p>
-        <p className="text-2xl md:text-3xl font-serif text-zinc-400">28 FEBRUARI 1986</p>
-        <p className="text-5xl md:text-7xl font-serif text-blood">23:21</p>
-        <div className="h-6" />
-        <p className="text-lg md:text-xl font-mono text-zinc-300 max-w-lg">
+        <p className="text-3xl md:text-5xl font-serif text-white">STOCKHOLM</p>
+        <p className="text-xl md:text-2xl font-serif text-zinc-400">28 FEBRUARI 1986</p>
+        <p className="text-4xl md:text-6xl font-serif text-blood">23:21</p>
+        <div className="h-4" />
+        <p className="text-base md:text-lg font-mono text-zinc-300 max-w-lg">
           Sveriges statsminister Olof Palme har just blivit skjuten på öppen gata.
         </p>
-        <div className="h-6" />
-        <p className="text-lg font-mono text-zinc-500">Du anländer till platsen.</p>
+        <div className="h-4" />
+        <p className="text-base font-mono text-zinc-500">Du anländer till platsen.</p>
       </div>
 
       <div className="relative z-10 mt-10 flex flex-col items-center gap-4 w-full max-w-sm">
@@ -115,7 +118,7 @@ export default function IntroScreen({ onStart, onResume, onDeletePlayer, savedPl
             {players.map(p => (
               <div key={p.id}>
                 <button
-                  onClick={() => onResume(p.id)}
+                  onClick={() => { if (needsApiKey && !getStoredApiKey()) return; onResume(p.id); }}
                   className="w-full flex items-center justify-between px-4 py-2.5 rounded-lg
                              bg-noir-800/80 border border-noir-700 backdrop-blur-sm
                              hover:border-zinc-500 transition-all group"
@@ -162,13 +165,33 @@ export default function IntroScreen({ onStart, onResume, onDeletePlayer, savedPl
         />
         <button
           onClick={handleStart}
-          disabled={!name.trim()}
+          disabled={!name.trim() || (needsApiKey && !apiKey)}
           className="px-8 py-3 border border-blood text-blood font-mono text-sm uppercase tracking-widest
                      hover:bg-blood hover:text-white transition-all duration-300
                      disabled:opacity-30 disabled:cursor-not-allowed"
         >
           Ny utredning
         </button>
+
+        {/* API key input */}
+        {(needsApiKey && !apiKey) && (
+          <div className="w-full bg-noir-800/80 border border-clue/30 rounded-lg p-4 backdrop-blur-sm">
+            <p className="font-mono text-xs text-clue mb-2">OpenRouter API-nyckel krävs</p>
+            <input
+              type="password"
+              value={apiKey}
+              onChange={(e) => {
+                setApiKey(e.target.value);
+                setStoredApiKey(e.target.value);
+              }}
+              placeholder="sk-or-..."
+              className="w-full bg-noir-900 border border-noir-600 rounded px-3 py-2 font-mono text-xs text-zinc-300 placeholder-zinc-600 focus:outline-none focus:border-clue/50"
+            />
+            <p className="font-mono text-[10px] text-zinc-600 mt-1.5">
+              Hämta din nyckel på openrouter.ai/keys
+            </p>
+          </div>
+        )}
 
         {/* Import via QR scan */}
         <div className="mt-2">
@@ -238,7 +261,7 @@ export default function IntroScreen({ onStart, onResume, onDeletePlayer, savedPl
           >
             <div onClick={(e) => e.stopPropagation()}>
               <div
-                className="relative w-[28rem] rounded-sm overflow-hidden shadow-2xl"
+                className="relative w-full max-w-[28rem] rounded-sm overflow-hidden shadow-2xl"
                 style={{
                   background: 'linear-gradient(135deg, #f5f0e8 0%, #e8e0d0 40%, #ddd5c5 100%)',
                   transform: 'rotate(-1deg)',

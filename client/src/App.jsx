@@ -38,6 +38,7 @@ export default function App() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [apiKey, setApiKey] = useState(() => getStoredApiKey());
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [needsApiKey, setNeedsApiKey] = useState(false);
 
   useEffect(() => {
     const onChange = () => setIsFullscreen(!!document.fullscreenElement);
@@ -58,8 +59,9 @@ export default function App() {
     Promise.all([fetchLocations(), fetchClues(), fetchClueTypes(), fetchConfig()])
       .then(([locations, clues, clueTypes, config]) => {
         loadData(locations, clues, clueTypes);
-        if (!config.hasServerKey && !getStoredApiKey()) {
-          setSettingsOpen(true);
+        if (!config.hasServerKey) {
+          setNeedsApiKey(true);
+          if (!getStoredApiKey()) setSettingsOpen(true);
         }
       })
       .catch(err => console.error('Failed to load game data:', err));
@@ -152,6 +154,7 @@ export default function App() {
         onDeletePlayer={handleDeletePlayer}
         savedPlayers={savedPlayers}
         music={music}
+        needsApiKey={needsApiKey}
       />
     );
   }
@@ -224,6 +227,10 @@ export default function App() {
             clues={state.clues}
             clueTypes={state.clueTypes}
             revealedClueIds={state.revealedClueIds}
+            conversations={state.conversations}
+            revealedNames={state.revealedNames}
+            characterSummaries={state.characterSummaries}
+            locations={state.locations}
             playerId={state.playerId}
             onClose={() => dispatch({ type: 'SET_VIEW', view: 'map' })}
           />

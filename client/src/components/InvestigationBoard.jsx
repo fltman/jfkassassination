@@ -1,12 +1,14 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { loadBoard, saveBoard } from '../lib/api';
+import { loadBoard, saveBoard, fetchCharactersAtLocation, ASSET_BASE } from '../lib/api';
 
 const BOARD_W = 6000;
 const BOARD_H = 4000;
 const CARD_W = 180;
 const CARD_H = 90;
+const WITNESS_W = 160;
+const WITNESS_H = 120;
 
-export default function InvestigationBoard({ clues, clueTypes, revealedClueIds, playerId, onClose }) {
+export default function InvestigationBoard({ clues, clueTypes, revealedClueIds, conversations, revealedNames, characterSummaries, locations, playerId, onClose }) {
   const containerRef = useRef(null);
   const canvasRef = useRef(null);
   const svgRef = useRef(null);
@@ -33,9 +35,25 @@ export default function InvestigationBoard({ clues, clueTypes, revealedClueIds, 
   const drawPaths = useRef([]); // saved paths for persistence
   const currentPath = useRef([]);
 
+  const [witnesses, setWitnesses] = useState([]); // { id, name, role, portrait_mood, location_id }
+
   const revealedClues = clues.filter(c => revealedClueIds.includes(c.id));
   const typeMap = {};
   for (const ct of clueTypes) typeMap[ct.id] = ct;
+
+  // Load witness data for characters we've talked to
+  const talkedToIds = Object.keys(conversations || {}).filter(id => conversations[id]?.length > 0);
+  useEffect(() => {
+    if (!locations?.length || !talkedToIds.length) return;
+    const locationIds = [...new Set(locations.map(l => l.id))];
+    Promise.all(locationIds.map(lid => fetchCharactersAtLocation(lid)))
+      .then(results => {
+        const allChars = results.flat();
+        const talked = allChars.filter(c => talkedToIds.includes(c.id));
+        setWitnesses(talked);
+      })
+      .catch(() => {});
+  }, [talkedToIds.length, locations?.length]);
 
   const saveTimer = useRef(null);
 
@@ -47,23 +65,24 @@ export default function InvestigationBoard({ clues, clueTypes, revealedClueIds, 
     }, 1000);
   }, [playerId]);
 
-  // Load saved state from DB
+  // Load saved state from DB, then fill in missing positions
   useEffect(() => {
     if (!playerId) return;
     loadBoard(playerId).then(saved => {
       if (saved) {
-        if (saved.positions) setCardPositions(saved.positions);
         if (saved.strings) setStrings(saved.strings);
         if (saved.notes) setNotes(saved.notes);
         if (saved.paths) drawPaths.current = saved.paths;
         if (saved.zoom) setZoom(saved.zoom);
         if (saved.pan) setPan(saved.pan);
         redrawCanvas();
+        // Merge saved positions — auto-position fills gaps below
+        if (saved.positions) setCardPositions(saved.positions);
       }
     }).catch(() => {});
   }, [playerId]);
 
-  // Auto-position new clues
+  // Auto-position: always ensure every revealed clue and witness has a position
   useEffect(() => {
     setCardPositions(prev => {
       const updated = { ...prev };
@@ -79,9 +98,21 @@ export default function InvestigationBoard({ clues, clueTypes, revealedClueIds, 
           needsUpdate = true;
         }
       });
+      witnesses.forEach((w, i) => {
+        const wKey = `witness-${w.id}`;
+        if (!updated[wKey]) {
+          const col = i % 6;
+          const row = Math.floor(i / 6);
+          updated[wKey] = {
+            x: 200 + col * 200 + (Math.random() * 30 - 15),
+            y: 1200 + row * 180 + (Math.random() * 20 - 10),
+          };
+          needsUpdate = true;
+        }
+      });
       return needsUpdate ? updated : prev;
     });
-  }, [revealedClues.length]);
+  }, [revealedClues.length, witnesses.length]);
 
   // Save on change
   useEffect(() => {
@@ -129,7 +160,7 @@ export default function InvestigationBoard({ clues, clueTypes, revealedClueIds, 
   // Zoom with scroll wheel
   const handleWheel = useCallback((e) => {
     e.preventDefault();
-    const delta = e.deltaY > 0 ? 0.9 : 1.1;
+    const delta = e.deltaY > 0 ? 0.96 : 1.04;
     const newZoom = Math.max(0.2, Math.min(3, zoom * delta));
 
     // Zoom toward cursor
@@ -242,11 +273,11 @@ export default function InvestigationBoard({ clues, clueTypes, revealedClueIds, 
 
   // Card/note drag
   const handleItemMouseDown = useCallback((e, type, id) => {
-    if (e.button !== 0 || tool === 'draw' || tool === 'erase') return;
-    e.stopPropagation();
-    e.preventDefault();
-
+    if (e.button !== 0) return;
+    // Always allow string connections regardless of tool
     if (stringMode) {
+      e.stopPropagation();
+      e.preventDefault();
       if (type === 'card' && id !== stringMode) {
         const exists = strings.some(
           s => (s.from === stringMode && s.to === id) || (s.from === id && s.to === stringMode)
@@ -265,6 +296,10 @@ export default function InvestigationBoard({ clues, clueTypes, revealedClueIds, 
       return;
     }
 
+    if (tool === 'draw' || tool === 'erase') return;
+    e.stopPropagation();
+    e.preventDefault();
+
     const pos = type === 'card' ? cardPositions[id] : notes.find(n => n.id === id);
     if (!pos) return;
     const coords = screenToBoard(e.clientX, e.clientY);
@@ -281,6 +316,32 @@ export default function InvestigationBoard({ clues, clueTypes, revealedClueIds, 
     setEditingNote(newNote.id);
   }, [screenToBoard, tool]);
 
+  // Always returns a position — uses saved position or computes and persists a fallback
+  const pendingPositions = useRef({});
+  const getPos = (id, index, type = 'clue') => {
+    if (cardPositions[id]) return cardPositions[id];
+    if (!pendingPositions.current[id]) {
+      if (type === 'witness') {
+        const col = index % 6;
+        const row = Math.floor(index / 6);
+        pendingPositions.current[id] = { x: 200 + col * 200, y: 1200 + row * 180 };
+      } else {
+        const col = index % 8;
+        const row = Math.floor(index / 8);
+        pendingPositions.current[id] = { x: 200 + col * 220, y: 200 + row * 160 };
+      }
+    }
+    return pendingPositions.current[id];
+  };
+
+  // Flush pending positions into state so they become draggable
+  useEffect(() => {
+    const pending = pendingPositions.current;
+    if (Object.keys(pending).length === 0) return;
+    pendingPositions.current = {};
+    setCardPositions(prev => ({ ...prev, ...pending }));
+  });
+
   const getCardCenter = (clueId) => {
     const pos = cardPositions[clueId];
     if (!pos) return null;
@@ -290,6 +351,32 @@ export default function InvestigationBoard({ clues, clueTypes, revealedClueIds, 
   const zoomIn = () => setZoom(z => Math.min(3, z * 1.2));
   const zoomOut = () => setZoom(z => Math.max(0.2, z / 1.2));
   const resetView = () => { setZoom(1); setPan({ x: 0, y: 0 }); };
+
+  const repositionAll = () => {
+    const updated = {};
+    revealedClues.forEach((clue, i) => {
+      const col = i % 8;
+      const row = Math.floor(i / 8);
+      updated[clue.id] = {
+        x: 200 + col * 220 + (Math.random() * 40 - 20),
+        y: 200 + row * 160 + (Math.random() * 30 - 15),
+      };
+    });
+    witnesses.forEach((w, i) => {
+      const wKey = `witness-${w.id}`;
+      const col = i % 6;
+      const row = Math.floor(i / 6);
+      updated[wKey] = {
+        x: 200 + col * 200 + (Math.random() * 30 - 15),
+        y: 1200 + row * 180 + (Math.random() * 20 - 10),
+      };
+    });
+    // Keep note positions
+    notes.forEach(n => { updated[n.id] = { x: n.x, y: n.y }; });
+    setCardPositions(updated);
+    setZoom(1);
+    setPan({ x: 0, y: 0 });
+  };
 
   const toolBtn = (t, label) => (
     <button
@@ -309,10 +396,10 @@ export default function InvestigationBoard({ clues, clueTypes, revealedClueIds, 
   return (
     <div className="fixed inset-0 z-50 bg-noir-950 flex flex-col">
       {/* Toolbar */}
-      <div className="h-12 bg-noir-900 border-b border-noir-700 flex items-center justify-between px-4 shrink-0">
+      <div className="h-12 bg-noir-900 border-b border-noir-700 flex items-center justify-between px-4 shrink-0 relative z-10">
         <div className="flex items-center gap-3">
           <h2 className="font-serif text-lg text-white">Utredningstavlan</h2>
-          <span className="font-mono text-xs text-zinc-500">{revealedClues.length} ledtrådar</span>
+          <span className="font-mono text-xs text-zinc-500">{revealedClues.length} ledtrådar · {witnesses.length} vittnen</span>
           <div className="w-px h-6 bg-noir-700" />
           {toolBtn('move', 'Flytta')}
           {toolBtn('draw', 'Rita')}
@@ -352,6 +439,12 @@ export default function InvestigationBoard({ clues, clueTypes, revealedClueIds, 
           </button>
         </div>
         <div className="flex items-center gap-2">
+          <button
+            onClick={repositionAll}
+            className="font-mono text-[10px] text-zinc-500 hover:text-white px-2 py-1 border border-noir-700 rounded bg-noir-800 hover:border-zinc-500 transition-colors"
+          >
+            Ordna alla
+          </button>
           <span className="font-mono text-[10px] text-zinc-600">{Math.round(zoom * 100)}%</span>
           <button onClick={zoomOut} className="w-7 h-7 bg-noir-800 border border-noir-700 rounded text-zinc-400 hover:text-white text-sm">-</button>
           <button onClick={resetView} className="font-mono text-[10px] text-zinc-500 hover:text-white px-1">Reset</button>
@@ -381,6 +474,8 @@ export default function InvestigationBoard({ clues, clueTypes, revealedClueIds, 
             transformOrigin: '0 0',
             backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.03) 1px, transparent 0)',
             backgroundSize: '40px 40px',
+            border: '3px solid #2a2218',
+            boxShadow: 'inset 0 0 60px rgba(0,0,0,0.5), 0 0 20px rgba(0,0,0,0.8)',
           }}
         >
           {/* Drawing canvas */}
@@ -414,9 +509,8 @@ export default function InvestigationBoard({ clues, clueTypes, revealedClueIds, 
           </svg>
 
           {/* Clue cards */}
-          {revealedClues.map(clue => {
-            const pos = cardPositions[clue.id];
-            if (!pos) return null;
+          {revealedClues.map((clue, i) => {
+            const pos = getPos(clue.id, i, 'clue');
             const ct = typeMap[clue.type];
             const isStringTarget = stringMode && stringMode !== clue.id && stringMode !== '__select__';
             const isStringSource = stringMode === clue.id;
@@ -437,25 +531,85 @@ export default function InvestigationBoard({ clues, clueTypes, revealedClueIds, 
                   handleItemMouseDown(e, 'card', clue.id);
                 }}
               >
+                {/* Pin */}
                 <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-zinc-600 border border-zinc-500 shadow-md z-10" />
-                <div className="rounded border bg-noir-800/95 backdrop-blur-sm overflow-hidden"
-                  style={{ borderColor: ct?.color ? ct.color + '60' : '#27272a', boxShadow: '0 2px 8px rgba(0,0,0,0.4)' }}>
-                  <img src={`/images/clues/${clue.id}.png`} alt="" className="w-full h-16 object-cover"
+                {/* Polaroid */}
+                <div className="bg-[#f5f0e8] p-1.5 pb-8 relative"
+                  style={{
+                    boxShadow: '0 3px 12px rgba(0,0,0,0.5), 0 1px 3px rgba(0,0,0,0.3)',
+                    transform: `rotate(${((clue.id.charCodeAt(5) || 0) % 7) - 3}deg)`,
+                  }}>
+                  <img src={`${ASSET_BASE}/images/clues/${clue.id}.jpg`} alt=""
+                    className="w-full h-28 object-cover"
+                    style={{ filter: 'contrast(1.05) saturate(0.9)' }}
                     onError={(e) => { e.target.style.display = 'none'; }} />
-                  <div className="p-2">
-                    <div className="flex items-start gap-1.5 mb-1">
-                      <span className="text-sm shrink-0">{ct?.icon}</span>
-                      <span className="font-mono text-[10px] font-bold leading-tight" style={{ color: ct?.color || '#d4d4d8' }}>
-                        {clue.title}
-                      </span>
-                    </div>
-                    <p className="font-mono text-[9px] text-zinc-500 leading-snug line-clamp-2">{clue.description}</p>
-                    {connectedStrings.length > 0 && (
-                      <div className="mt-1 flex gap-1">
-                        {connectedStrings.map((_, i) => <div key={i} className="w-1.5 h-1.5 rounded-full bg-blood/60" />)}
-                      </div>
-                    )}
+                  <div className="absolute bottom-1 left-0 right-0 px-2 text-center">
+                    <span className="text-[10px] leading-tight" style={{ fontFamily: 'cursive', color: '#2a2218' }}>
+                      {ct?.icon} {clue.title}
+                    </span>
                   </div>
+                  {connectedStrings.length > 0 && (
+                    <div className="absolute top-2 right-2 flex gap-0.5">
+                      {connectedStrings.map((_, ci) => <div key={ci} className="w-1.5 h-1.5 rounded-full bg-red-600" />)}
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+
+          {/* Witness cards */}
+          {witnesses.map((w, i) => {
+            const wKey = `witness-${w.id}`;
+            const pos = getPos(wKey, i, 'witness');
+            const knownName = (revealedNames || []).includes(w.id);
+            const displayName = knownName ? w.name : (w.anonymous_name || 'Okänd');
+            const summary = (characterSummaries || {})[w.id];
+            const isStringTarget = stringMode && stringMode !== wKey && stringMode !== '__select__';
+            const isStringSource = stringMode === wKey;
+            const connectedStrings = strings.filter(s => s.from === wKey || s.to === wKey);
+            const location = (locations || []).find(l => l.id === w.location_id);
+
+            return (
+              <div
+                key={wKey}
+                data-card
+                className={`absolute select-none transition-shadow ${
+                  isStringSource ? 'ring-2 ring-blood shadow-lg shadow-blood/20' :
+                  isStringTarget ? 'hover:ring-2 hover:ring-blood/50 cursor-crosshair' :
+                  tool === 'move' ? 'cursor-grab active:cursor-grabbing' : ''
+                }`}
+                style={{ left: pos.x, top: pos.y, width: WITNESS_W, zIndex: dragItem?.id === wKey ? 100 : 10 }}
+                onMouseDown={(e) => {
+                  if (stringMode === '__select__') { e.stopPropagation(); setStringMode(wKey); return; }
+                  handleItemMouseDown(e, 'card', wKey);
+                }}
+              >
+                {/* Pin */}
+                <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-zinc-600 border border-zinc-500 shadow-md z-10" />
+                {/* Polaroid */}
+                <div className="bg-[#f5f0e8] p-1.5 pb-8 relative"
+                  style={{
+                    boxShadow: '0 3px 12px rgba(0,0,0,0.5), 0 1px 3px rgba(0,0,0,0.3)',
+                    transform: `rotate(${((w.id.charCodeAt(3) || 0) % 9) - 4}deg)`,
+                  }}>
+                  <img
+                    src={`${ASSET_BASE}/images/characters/${w.id}.jpg`}
+                    alt=""
+                    className="w-full h-28 object-cover object-top"
+                    style={{ filter: 'contrast(1.05) saturate(0.85)' }}
+                    onError={(e) => { e.target.style.display = 'none'; }}
+                  />
+                  <div className="absolute bottom-1 left-0 right-0 px-2 text-center">
+                    <span className="text-[10px] leading-tight block" style={{ fontFamily: 'cursive', color: '#2a2218' }}>
+                      {displayName}
+                    </span>
+                  </div>
+                  {connectedStrings.length > 0 && (
+                    <div className="absolute top-2 right-2 flex gap-0.5">
+                      {connectedStrings.map((_, ci) => <div key={ci} className="w-1.5 h-1.5 rounded-full bg-red-600" />)}
+                    </div>
+                  )}
                 </div>
               </div>
             );
