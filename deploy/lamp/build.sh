@@ -9,8 +9,8 @@ OUTPUT_DIR="$SCRIPT_DIR/public"
 echo "Building React frontend..."
 cd "$PROJECT_ROOT/client"
 
-# Temporarily update vite config for /api base
-VITE_ENV="VITE_API_BASE=/api" npm run build
+# Build with relative base path for subdirectory deployment
+npx vite build --base=./
 
 echo "Copying built files..."
 rm -rf "$OUTPUT_DIR"

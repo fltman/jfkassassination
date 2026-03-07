@@ -21,9 +21,13 @@ if (!$data) die("Error: Could not parse JSON\n");
 
 $pdo = getDb();
 
-// Truncate in reverse dependency order
+// Fix column types if needed (in case schema was created with older version)
+try { $pdo->exec("ALTER TABLE characters MODIFY portrait_mood TEXT"); } catch (Exception $e) {}
+
+// Truncate in reverse dependency order (including player data)
 $pdo->exec("SET FOREIGN_KEY_CHECKS = 0");
-$tables = ['character_clues', 'clue_links', 'location_unlock_clues', 'characters', 'clues', 'locations', 'clue_types', 'ai_config'];
+$tables = ['player_conversations', 'player_notebook', 'player_board', 'player_state', 'players',
+           'character_clues', 'clue_links', 'location_unlock_clues', 'characters', 'clues', 'locations', 'clue_types', 'ai_config'];
 foreach ($tables as $t) {
     $pdo->exec("TRUNCATE TABLE $t");
 }
