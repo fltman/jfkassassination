@@ -35,6 +35,21 @@ export default function App() {
   const [notebookOpen, setNotebookOpen] = useState(false);
   const [savedPlayers, setSavedPlayers] = useState(() => JSON.parse(localStorage.getItem(PLAYERS_KEY) || '[]'));
   const [notebookRevision, setNotebookRevision] = useState(0);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  useEffect(() => {
+    const onChange = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener('fullscreenchange', onChange);
+    return () => document.removeEventListener('fullscreenchange', onChange);
+  }, []);
+
+  const toggleFullscreen = () => {
+    if (document.fullscreenElement) {
+      document.exitFullscreen();
+    } else {
+      document.documentElement.requestFullscreen();
+    }
+  };
 
   // Load game data
   useEffect(() => {
@@ -252,13 +267,30 @@ export default function App() {
             </button>
           )}
         </div>
-        <MusicPlayer
-          muted={music.muted}
-          toggleMute={music.toggleMute}
-          volume={music.volume}
-          setVolume={music.setVolume}
-          inline
-        />
+        <div className="flex items-center gap-3">
+          <MusicPlayer
+            muted={music.muted}
+            toggleMute={music.toggleMute}
+            volume={music.volume}
+            setVolume={music.setVolume}
+            inline
+          />
+          <button
+            onClick={toggleFullscreen}
+            className="text-zinc-500 hover:text-zinc-300 transition-colors"
+            title={isFullscreen ? 'Avsluta fullskärm' : 'Fullskärm'}
+          >
+            {isFullscreen ? (
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <path d="M5 1v4H1M11 1v4h4M5 15v-4H1M11 15v-4h4" />
+              </svg>
+            ) : (
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <path d="M1 5V1h4M11 1h4v4M1 11v4h4M15 11v4h-4" />
+              </svg>
+            )}
+          </button>
+        </div>
       </div>
     </div>
   );
