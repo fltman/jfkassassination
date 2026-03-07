@@ -162,7 +162,7 @@ export default function App() {
   return (
     <div className="h-screen flex flex-col bg-noir-950 overflow-hidden">
       {/* Map is always rendered underneath */}
-      <div className="flex-1 relative">
+      <div className="flex-1 relative overflow-hidden">
         <GameMap
           locations={state.locations}
           unlockedLocationIds={state.unlockedLocationIds}
