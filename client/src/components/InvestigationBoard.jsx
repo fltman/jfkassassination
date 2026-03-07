@@ -20,6 +20,8 @@ export default function InvestigationBoard({ clues, clueTypes, revealedClueIds, 
   const [dragItem, setDragItem] = useState(null);
   const [stringMode, setStringMode] = useState(null);
   const [editingNote, setEditingNote] = useState(null);
+  const [flippedCards, setFlippedCards] = useState({});
+  const clickStart = useRef(null);
 
   // Viewport state
   const [zoom, setZoom] = useState(1);
@@ -515,6 +517,8 @@ export default function InvestigationBoard({ clues, clueTypes, revealedClueIds, 
             const isStringTarget = stringMode && stringMode !== clue.id && stringMode !== '__select__';
             const isStringSource = stringMode === clue.id;
             const connectedStrings = strings.filter(s => s.from === clue.id || s.to === clue.id);
+            const flipped = flippedCards[clue.id];
+            const rotation = ((clue.id.charCodeAt(5) || 0) % 7) - 3;
 
             return (
               <div
@@ -525,34 +529,67 @@ export default function InvestigationBoard({ clues, clueTypes, revealedClueIds, 
                   isStringTarget ? 'hover:ring-2 hover:ring-blood/50 cursor-crosshair' :
                   tool === 'move' ? 'cursor-grab active:cursor-grabbing' : ''
                 }`}
-                style={{ left: pos.x, top: pos.y, width: CARD_W, zIndex: dragItem?.id === clue.id ? 100 : 10 }}
+                style={{ left: pos.x, top: pos.y, width: CARD_W, zIndex: dragItem?.id === clue.id ? 100 : 10, perspective: 600 }}
                 onMouseDown={(e) => {
+                  clickStart.current = { x: e.clientX, y: e.clientY, id: clue.id };
                   if (stringMode === '__select__') { e.stopPropagation(); setStringMode(clue.id); return; }
                   handleItemMouseDown(e, 'card', clue.id);
+                }}
+                onMouseUp={(e) => {
+                  const start = clickStart.current;
+                  if (start && start.id === clue.id) {
+                    const dx = Math.abs(e.clientX - start.x);
+                    const dy = Math.abs(e.clientY - start.y);
+                    if (dx < 4 && dy < 4 && tool === 'move' && !stringMode) {
+                      setFlippedCards(prev => ({ ...prev, [clue.id]: !prev[clue.id] }));
+                    }
+                  }
+                  clickStart.current = null;
                 }}
               >
                 {/* Pin */}
                 <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-zinc-600 border border-zinc-500 shadow-md z-10" />
-                {/* Polaroid */}
-                <div className="bg-[#f5f0e8] p-1.5 pb-8 relative"
-                  style={{
-                    boxShadow: '0 3px 12px rgba(0,0,0,0.5), 0 1px 3px rgba(0,0,0,0.3)',
-                    transform: `rotate(${((clue.id.charCodeAt(5) || 0) % 7) - 3}deg)`,
-                  }}>
-                  <img src={`${ASSET_BASE}/images/clues/${clue.id}.jpg`} alt=""
-                    className="w-full h-28 object-cover"
-                    style={{ filter: 'contrast(1.05) saturate(0.9)' }}
-                    onError={(e) => { e.target.style.display = 'none'; }} />
-                  <div className="absolute bottom-1 left-0 right-0 px-2 text-center">
-                    <span className="text-[13px] leading-tight" style={{ fontFamily: "'Caveat', cursive", color: '#2a2218', fontWeight: 600 }}>
-                      {clue.title}
-                    </span>
-                  </div>
-                  {connectedStrings.length > 0 && (
-                    <div className="absolute top-2 right-2 flex gap-0.5">
-                      {connectedStrings.map((_, ci) => <div key={ci} className="w-1.5 h-1.5 rounded-full bg-red-600" />)}
+                {/* Flip container */}
+                <div style={{
+                  transform: `rotate(${rotation}deg) rotateY(${flipped ? 180 : 0}deg)`,
+                  transformStyle: 'preserve-3d',
+                  transition: 'transform 0.5s ease',
+                }}>
+                  {/* Front — Polaroid */}
+                  <div className="bg-[#f5f0e8] p-1.5 pb-12 relative"
+                    style={{
+                      boxShadow: '0 3px 12px rgba(0,0,0,0.5), 0 1px 3px rgba(0,0,0,0.3)',
+                      backfaceVisibility: 'hidden',
+                    }}>
+                    <img src={`${ASSET_BASE}/images/clues/${clue.id}.jpg`} alt=""
+                      className="w-full h-28 object-cover"
+                      style={{ filter: 'contrast(1.05) saturate(0.9)' }}
+                      onError={(e) => { e.target.style.display = 'none'; }} />
+                    <div className="absolute bottom-1.5 left-0 right-0 px-2 text-center">
+                      <span className="text-[13px] leading-tight line-clamp-2" style={{ fontFamily: "'Caveat', cursive", color: '#2a2218', fontWeight: 600 }}>
+                        {clue.title}
+                      </span>
                     </div>
-                  )}
+                    {connectedStrings.length > 0 && (
+                      <div className="absolute top-2 right-2 flex gap-0.5">
+                        {connectedStrings.map((_, ci) => <div key={ci} className="w-1.5 h-1.5 rounded-full bg-red-600" />)}
+                      </div>
+                    )}
+                  </div>
+                  {/* Back — Description */}
+                  <div className="absolute inset-0 bg-[#f5f0e8] p-3 overflow-hidden"
+                    style={{
+                      boxShadow: '0 3px 12px rgba(0,0,0,0.5), 0 1px 3px rgba(0,0,0,0.3)',
+                      backfaceVisibility: 'hidden',
+                      transform: 'rotateY(180deg)',
+                    }}>
+                    <div className="text-[13px] leading-tight mb-1.5 pb-1 border-b" style={{ fontFamily: "'Caveat', cursive", color: '#2a2218', fontWeight: 600, borderColor: '#d0c8b8' }}>
+                      {clue.title}
+                    </div>
+                    <div className="text-[12px] leading-snug overflow-hidden" style={{ fontFamily: "'Caveat', cursive", color: '#4a3a2a' }}>
+                      {clue.description}
+                    </div>
+                  </div>
                 </div>
               </div>
             );
