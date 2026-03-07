@@ -73,7 +73,7 @@ export default function Notebook({ playerId, isOpen, revision = 0, onClose }) {
   if (!isOpen) return null;
 
   return (
-    <div className="absolute left-4 bottom-0 top-0 z-20 flex items-end pb-4 pointer-events-none">
+    <div className="absolute left-4 bottom-0 top-0 z-[55] flex items-end pb-4 pointer-events-none">
       <div
         className="pointer-events-auto flex flex-col rounded-t-lg border border-noir-700 shadow-2xl overflow-hidden"
         style={{

@@ -18,7 +18,7 @@ export default function ClueLog({ clues, clueTypes, revealedClueIds, isOpen, onC
 
   return (
     <div className="absolute left-0 top-0 bottom-0 w-full md:w-80 bg-noir-900/95 backdrop-blur-sm
-                    border-r border-noir-700 z-30 flex flex-col overflow-y-auto">
+                    border-r border-noir-700 z-[55] flex flex-col overflow-y-auto">
       <div className="p-6 border-b border-noir-700 flex items-center justify-between">
         <h2 className="font-serif text-xl text-white">Ledtrådar</h2>
         <button onClick={onClose} className="text-zinc-500 hover:text-zinc-300 text-xl">
