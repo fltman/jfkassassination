@@ -1,4 +1,24 @@
 const BASE = '/api';
+const API_KEY_STORAGE = 'palme_openrouter_key';
+
+export function getStoredApiKey() {
+  return localStorage.getItem(API_KEY_STORAGE) || '';
+}
+
+export function setStoredApiKey(key) {
+  if (key) {
+    localStorage.setItem(API_KEY_STORAGE, key);
+  } else {
+    localStorage.removeItem(API_KEY_STORAGE);
+  }
+}
+
+function aiHeaders() {
+  const headers = { 'Content-Type': 'application/json' };
+  const key = getStoredApiKey();
+  if (key) headers['X-OpenRouter-Key'] = key;
+  return headers;
+}
 
 export async function fetchLocations() {
   const res = await fetch(`${BASE}/locations`);
@@ -33,7 +53,7 @@ export async function fetchConfig() {
 export async function sendMessage(characterId, messages, revealedClueIds) {
   const res = await fetch(`${BASE}/chat/message`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: aiHeaders(),
     body: JSON.stringify({ characterId, messages, revealedClueIds }),
   });
   if (!res.ok) {
@@ -105,7 +125,7 @@ export async function saveNotebook(playerId, content) {
 export async function generateNote(characterName, message) {
   const res = await fetch(`${BASE}/chat/note`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: aiHeaders(),
     body: JSON.stringify({ characterName, message }),
   });
   if (!res.ok) return null;
@@ -116,7 +136,7 @@ export async function generateNote(characterName, message) {
 export async function summarizeConversation(characterId, messages) {
   const res = await fetch(`${BASE}/chat/summarize`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: aiHeaders(),
     body: JSON.stringify({ characterId, messages }),
   });
   if (!res.ok) return null;

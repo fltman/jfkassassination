@@ -33,14 +33,19 @@ function jsonInput(): array {
     return json_decode(file_get_contents('php://input'), true) ?? [];
 }
 
-function callOpenRouter(array $body): array {
+function getApiKey(): string {
+    return $_SERVER['HTTP_X_OPENROUTER_KEY'] ?? OPENROUTER_API_KEY;
+}
+
+function callOpenRouter(array $body, ?string $apiKey = null): array {
+    $key = $apiKey ?? getApiKey();
     $ch = curl_init('https://openrouter.ai/api/v1/chat/completions');
     curl_setopt_array($ch, [
         CURLOPT_POST => true,
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_HTTPHEADER => [
             'Content-Type: application/json',
-            'Authorization: Bearer ' . OPENROUTER_API_KEY,
+            'Authorization: Bearer ' . $key,
             'HTTP-Referer: https://mordet-pa-sveavagen.local',
             'X-Title: Mordet på Sveavägen',
         ],

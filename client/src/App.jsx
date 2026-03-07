@@ -1,7 +1,7 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { useGameState } from './hooks/useGameState';
 import { useMusic, resolveTrack } from './hooks/useMusic';
-import { fetchLocations, fetchClues, fetchClueTypes, createPlayer, loadPlayer, savePlayerState, saveConversation, generateNote } from './lib/api';
+import { fetchLocations, fetchClues, fetchClueTypes, fetchConfig, createPlayer, loadPlayer, savePlayerState, saveConversation, generateNote, getStoredApiKey, setStoredApiKey } from './lib/api';
 import IntroScreen from './components/IntroScreen';
 import GameMap from './components/GameMap';
 import LocationPanel from './components/LocationPanel';
@@ -36,6 +36,8 @@ export default function App() {
   const [savedPlayers, setSavedPlayers] = useState(() => JSON.parse(localStorage.getItem(PLAYERS_KEY) || '[]'));
   const [notebookRevision, setNotebookRevision] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [apiKey, setApiKey] = useState(() => getStoredApiKey());
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   useEffect(() => {
     const onChange = () => setIsFullscreen(!!document.fullscreenElement);
@@ -53,9 +55,12 @@ export default function App() {
 
   // Load game data
   useEffect(() => {
-    Promise.all([fetchLocations(), fetchClues(), fetchClueTypes()])
-      .then(([locations, clues, clueTypes]) => {
+    Promise.all([fetchLocations(), fetchClues(), fetchClueTypes(), fetchConfig()])
+      .then(([locations, clues, clueTypes, config]) => {
         loadData(locations, clues, clueTypes);
+        if (!config.hasServerKey && !getStoredApiKey()) {
+          setSettingsOpen(true);
+        }
       })
       .catch(err => console.error('Failed to load game data:', err));
   }, [loadData]);
@@ -275,6 +280,38 @@ export default function App() {
             setVolume={music.setVolume}
             inline
           />
+          <div className="relative">
+            <button
+              onClick={() => setSettingsOpen(o => !o)}
+              className="text-zinc-500 hover:text-zinc-300 transition-colors"
+              title="Inställningar"
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <circle cx="8" cy="8" r="2.5" />
+                <path d="M8 1v2M8 13v2M1 8h2M13 8h2M2.9 2.9l1.4 1.4M11.7 11.7l1.4 1.4M13.1 2.9l-1.4 1.4M4.3 11.7l-1.4 1.4" />
+              </svg>
+            </button>
+            {settingsOpen && (
+              <div className="absolute bottom-full right-0 mb-2 w-72 bg-noir-800 border border-noir-600 rounded-lg p-3 shadow-xl z-50">
+                <label className="block font-mono text-[11px] text-zinc-400 mb-1">
+                  OpenRouter API-nyckel
+                </label>
+                <input
+                  type="password"
+                  value={apiKey}
+                  onChange={(e) => {
+                    setApiKey(e.target.value);
+                    setStoredApiKey(e.target.value);
+                  }}
+                  placeholder="sk-or-..."
+                  className="w-full bg-noir-900 border border-noir-600 rounded px-2 py-1.5 font-mono text-xs text-zinc-300 placeholder-zinc-600 focus:outline-none focus:border-zinc-500"
+                />
+                <p className="font-mono text-[10px] text-zinc-600 mt-1.5">
+                  Valfritt. Används istället för serverns nyckel.
+                </p>
+              </div>
+            )}
+          </div>
           <button
             onClick={toggleFullscreen}
             className="text-zinc-500 hover:text-zinc-300 transition-colors"

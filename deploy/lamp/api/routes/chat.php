@@ -8,7 +8,7 @@ function chatMessage(): void {
     $revealedClueIds = $input['revealedClueIds'] ?? [];
 
     if (!$characterId || !$messages) jsonResponse(['error' => 'characterId and messages required'], 400);
-    if (!OPENROUTER_API_KEY) jsonResponse(['error' => 'API key not configured'], 500);
+    if (!getApiKey()) jsonResponse(['error' => 'API key not configured'], 500);
 
     $pdo = getDb();
 
@@ -81,7 +81,7 @@ function chatSummarize(): void {
     $messages = $input['messages'] ?? null;
 
     if (!$characterId || empty($messages)) jsonResponse(['error' => 'characterId and messages required'], 400);
-    if (!OPENROUTER_API_KEY) jsonResponse(['error' => 'API key not configured'], 500);
+    if (!getApiKey()) jsonResponse(['error' => 'API key not configured'], 500);
 
     $pdo = getDb();
     $stmt = $pdo->prepare("SELECT name, anonymous_name, role FROM characters WHERE id = ?");
@@ -112,7 +112,7 @@ function chatNote(): void {
     $message = $input['message'] ?? null;
 
     if (!$characterName || !$message) jsonResponse(['error' => 'characterName and message required'], 400);
-    if (!OPENROUTER_API_KEY) jsonResponse(['error' => 'API key not configured'], 500);
+    if (!getApiKey()) jsonResponse(['error' => 'API key not configured'], 500);
 
     $result = callOpenRouter([
         'model' => AI_MODEL,

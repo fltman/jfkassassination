@@ -14,7 +14,7 @@ router.post('/message', async (req, res) => {
     return res.status(400).json({ error: 'characterId and messages required' });
   }
 
-  const apiKey = process.env.OPENROUTER_API_KEY;
+  const apiKey = req.headers['x-openrouter-key'] || process.env.OPENROUTER_API_KEY;
   if (!apiKey) {
     return res.status(500).json({ error: 'OPENROUTER_API_KEY not configured' });
   }
@@ -101,7 +101,7 @@ router.post('/summarize', async (req, res) => {
   const { characterId, messages } = req.body;
   if (!characterId || !messages?.length) return res.status(400).json({ error: 'characterId and messages required' });
 
-  const apiKey = process.env.OPENROUTER_API_KEY;
+  const apiKey = req.headers['x-openrouter-key'] || process.env.OPENROUTER_API_KEY;
   if (!apiKey) return res.status(500).json({ error: 'API key not configured' });
 
   const db = getDb();
@@ -136,7 +136,7 @@ router.post('/note', async (req, res) => {
   const { characterName, message } = req.body;
   if (!characterName || !message) return res.status(400).json({ error: 'characterName and message required' });
 
-  const apiKey = process.env.OPENROUTER_API_KEY;
+  const apiKey = req.headers['x-openrouter-key'] || process.env.OPENROUTER_API_KEY;
   if (!apiKey) return res.status(500).json({ error: 'API key not configured' });
 
   try {

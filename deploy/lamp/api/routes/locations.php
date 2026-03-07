@@ -68,5 +68,6 @@ function getConfig(): void {
     $rows = $pdo->query("SELECT `key`, value FROM ai_config")->fetchAll();
     $config = [];
     foreach ($rows as $r) $config[$r['key']] = $r['value'];
+    $config['hasServerKey'] = !!OPENROUTER_API_KEY;
     jsonResponse($config);
 }

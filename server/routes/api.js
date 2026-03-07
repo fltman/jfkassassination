@@ -11,6 +11,7 @@ router.get('/config', (req, res) => {
   for (const row of rows) {
     config[row.key] = row.value;
   }
+  config.hasServerKey = !!process.env.OPENROUTER_API_KEY;
   res.json(config);
 });
 
