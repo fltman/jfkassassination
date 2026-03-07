@@ -1,6 +1,5 @@
 node_modules/
 dist/
-server/db/palme.db
 server/db/palme.db-shm
 server/db/palme.db-wal
 .env
