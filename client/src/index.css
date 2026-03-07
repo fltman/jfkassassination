@@ -1,0 +1,64 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* Leaflet dark theme overrides */
+.leaflet-container {
+  background: #0a0a0f;
+}
+
+.leaflet-control-zoom a {
+  background: #1a1a2a !important;
+  color: #d4d4d8 !important;
+  border-color: #27272a !important;
+}
+
+/* Brighten map labels */
+.map-tiles-brighter {
+  filter: brightness(1.4) contrast(1.1);
+}
+
+.portrait-pan {
+  animation: portraitPan 30s ease-in-out infinite alternate;
+}
+
+@keyframes portraitPan {
+  0%   { object-position: center 20%; }
+  100% { object-position: center 80%; }
+}
+
+/* Pulsing marker */
+@keyframes pulse-ring {
+  0% { transform: scale(0.8); opacity: 1; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+
+.marker-pulse {
+  animation: pulse-ring 2s ease-out infinite;
+}
+
+/* Permanent map labels */
+.map-label {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: #d4d4d8;
+  text-shadow: 0 0 6px #0a0a0f, 0 0 12px #0a0a0f, 0 1px 2px #0a0a0f;
+  white-space: nowrap;
+}
+
+.map-label::before {
+  display: none !important;
+}
