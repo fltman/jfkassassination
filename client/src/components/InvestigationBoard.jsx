@@ -544,8 +544,8 @@ export default function InvestigationBoard({ clues, clueTypes, revealedClueIds, 
                     style={{ filter: 'contrast(1.05) saturate(0.9)' }}
                     onError={(e) => { e.target.style.display = 'none'; }} />
                   <div className="absolute bottom-1 left-0 right-0 px-2 text-center">
-                    <span className="text-[10px] leading-tight" style={{ fontFamily: 'cursive', color: '#2a2218' }}>
-                      {ct?.icon} {clue.title}
+                    <span className="text-[13px] leading-tight" style={{ fontFamily: "'Caveat', cursive", color: '#2a2218', fontWeight: 600 }}>
+                      {clue.title}
                     </span>
                   </div>
                   {connectedStrings.length > 0 && (
@@ -601,7 +601,7 @@ export default function InvestigationBoard({ clues, clueTypes, revealedClueIds, 
                     onError={(e) => { e.target.style.display = 'none'; }}
                   />
                   <div className="absolute bottom-1 left-0 right-0 px-2 text-center">
-                    <span className="text-[10px] leading-tight block" style={{ fontFamily: 'cursive', color: '#2a2218' }}>
+                    <span className="text-[13px] leading-tight block" style={{ fontFamily: "'Caveat', cursive", color: '#2a2218', fontWeight: 600 }}>
                       {displayName}
                     </span>
                   </div>
