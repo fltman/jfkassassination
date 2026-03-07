@@ -583,10 +583,7 @@ export default function InvestigationBoard({ clues, clueTypes, revealedClueIds, 
                       backfaceVisibility: 'hidden',
                       transform: 'rotateY(180deg)',
                     }}>
-                    <div className="text-[9px] leading-tight mb-1 pb-1 border-b" style={{ fontFamily: "'Caveat', cursive", color: '#2a2218', fontWeight: 600, borderColor: '#d0c8b8' }}>
-                      {clue.title}
-                    </div>
-                    <div className="text-[8px] leading-snug overflow-hidden" style={{ fontFamily: "'Caveat', cursive", color: '#4a3a2a' }}>
+                    <div className="text-[8px] leading-snug overflow-hidden h-full" style={{ fontFamily: "'Caveat', cursive", color: '#4a3a2a' }}>
                       {clue.description}
                     </div>
                   </div>
@@ -676,19 +673,12 @@ export default function InvestigationBoard({ clues, clueTypes, revealedClueIds, 
                       backfaceVisibility: 'hidden',
                       transform: 'rotateY(180deg)',
                     }}>
-                    <div className="text-[9px] leading-tight mb-1 pb-1 border-b" style={{ fontFamily: "'Caveat', cursive", color: '#2a2218', fontWeight: 600, borderColor: '#d0c8b8' }}>
-                      {displayName}
-                    </div>
-                    <div className="text-[8px] leading-snug" style={{ fontFamily: "'Caveat', cursive", color: '#6a5a4a' }}>
-                      {w.role}
-                    </div>
-                    {summary && (
-                      <div className="mt-1 text-[10px] leading-snug overflow-hidden" style={{ fontFamily: "'Caveat', cursive", color: '#4a3a2a' }}>
+                    {summary ? (
+                      <div className="text-[8px] leading-snug overflow-hidden h-full" style={{ fontFamily: "'Caveat', cursive", color: '#4a3a2a' }}>
                         {summary}
                       </div>
-                    )}
-                    {!summary && (
-                      <div className="mt-1.5 text-[8px] italic" style={{ fontFamily: "'Caveat', cursive", color: '#9a8a7a' }}>
+                    ) : (
+                      <div className="text-[8px] italic" style={{ fontFamily: "'Caveat', cursive", color: '#9a8a7a' }}>
                         Inget samtal ännu...
                       </div>
                     )}
