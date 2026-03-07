@@ -49,8 +49,8 @@ router.get('/:id', (req, res) => {
   });
 });
 
-// PUT /api/player/:id/state — save player state
-router.put('/:id/state', (req, res) => {
+// POST /api/player/:id/state — save player state
+router.post('/:id/state', (req, res) => {
   const { unlockedLocations, revealedClues, revealedNames, characterSummaries } = req.body;
   const db = getDb();
 
@@ -72,8 +72,8 @@ router.put('/:id/state', (req, res) => {
   res.json({ ok: true });
 });
 
-// PUT /api/player/:id/conversation/:characterId — save conversation
-router.put('/:id/conversation/:characterId', (req, res) => {
+// POST /api/player/:id/conversation/:characterId — save conversation
+router.post('/:id/conversation/:characterId', (req, res) => {
   const { messages } = req.body;
   const db = getDb();
 
@@ -93,8 +93,8 @@ router.get('/:id/board', (req, res) => {
   res.json(row ? JSON.parse(row.data) : null);
 });
 
-// PUT /api/player/:id/board — save investigation board
-router.put('/:id/board', (req, res) => {
+// POST /api/player/:id/board — save investigation board
+router.post('/:id/board', (req, res) => {
   const db = getDb();
   db.prepare(`
     INSERT INTO player_board (player_id, data) VALUES (?, ?)
@@ -110,8 +110,8 @@ router.get('/:id/notebook', (req, res) => {
   res.json({ content: row?.content || '' });
 });
 
-// PUT /api/player/:id/notebook — save notebook
-router.put('/:id/notebook', (req, res) => {
+// POST /api/player/:id/notebook — save notebook
+router.post('/:id/notebook', (req, res) => {
   const db = getDb();
   db.prepare(`
     INSERT INTO player_notebook (player_id, content) VALUES (?, ?)
