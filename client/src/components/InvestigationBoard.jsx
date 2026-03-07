@@ -396,7 +396,7 @@ export default function InvestigationBoard({ clues, clueTypes, revealedClueIds, 
   const cursorClass = tool === 'draw' ? 'cursor-crosshair' : tool === 'erase' ? 'cursor-cell' : 'cursor-grab';
 
   return (
-    <div className="fixed inset-0 z-50 bg-noir-950 flex flex-col">
+    <div className="absolute inset-0 z-50 bg-noir-950 flex flex-col">
       {/* Toolbar */}
       <div className="h-12 bg-noir-900 border-b border-noir-700 flex items-center justify-between px-4 shrink-0 relative z-10">
         <div className="flex items-center gap-3">
