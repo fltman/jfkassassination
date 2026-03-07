@@ -607,6 +607,9 @@ export default function InvestigationBoard({ clues, clueTypes, revealedClueIds, 
             const connectedStrings = strings.filter(s => s.from === wKey || s.to === wKey);
             const location = (locations || []).find(l => l.id === w.location_id);
 
+            const wFlipped = flippedCards[wKey];
+            const wRotation = ((w.id.charCodeAt(3) || 0) % 9) - 4;
+
             return (
               <div
                 key={wKey}
@@ -616,37 +619,80 @@ export default function InvestigationBoard({ clues, clueTypes, revealedClueIds, 
                   isStringTarget ? 'hover:ring-2 hover:ring-blood/50 cursor-crosshair' :
                   tool === 'move' ? 'cursor-grab active:cursor-grabbing' : ''
                 }`}
-                style={{ left: pos.x, top: pos.y, width: WITNESS_W, zIndex: dragItem?.id === wKey ? 100 : 10 }}
+                style={{ left: pos.x, top: pos.y, width: WITNESS_W, zIndex: dragItem?.id === wKey ? 100 : 10, perspective: 600 }}
                 onMouseDown={(e) => {
+                  clickStart.current = { x: e.clientX, y: e.clientY, id: wKey };
                   if (stringMode === '__select__') { e.stopPropagation(); setStringMode(wKey); return; }
                   handleItemMouseDown(e, 'card', wKey);
+                }}
+                onMouseUp={(e) => {
+                  const start = clickStart.current;
+                  if (start && start.id === wKey) {
+                    const dx = Math.abs(e.clientX - start.x);
+                    const dy = Math.abs(e.clientY - start.y);
+                    if (dx < 4 && dy < 4 && tool === 'move' && !stringMode) {
+                      setFlippedCards(prev => ({ ...prev, [wKey]: !prev[wKey] }));
+                    }
+                  }
+                  clickStart.current = null;
                 }}
               >
                 {/* Pin */}
                 <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-zinc-600 border border-zinc-500 shadow-md z-10" />
-                {/* Polaroid */}
-                <div className="bg-[#f5f0e8] p-1.5 pb-8 relative"
-                  style={{
-                    boxShadow: '0 3px 12px rgba(0,0,0,0.5), 0 1px 3px rgba(0,0,0,0.3)',
-                    transform: `rotate(${((w.id.charCodeAt(3) || 0) % 9) - 4}deg)`,
-                  }}>
-                  <img
-                    src={`${ASSET_BASE}/images/characters/${w.id}.jpg`}
-                    alt=""
-                    className="w-full h-28 object-cover object-top"
-                    style={{ filter: 'contrast(1.05) saturate(0.85)' }}
-                    onError={(e) => { e.target.style.display = 'none'; }}
-                  />
-                  <div className="absolute bottom-1 left-0 right-0 px-2 text-center">
-                    <span className="text-[13px] leading-tight block" style={{ fontFamily: "'Caveat', cursive", color: '#2a2218', fontWeight: 600 }}>
-                      {displayName}
-                    </span>
-                  </div>
-                  {connectedStrings.length > 0 && (
-                    <div className="absolute top-2 right-2 flex gap-0.5">
-                      {connectedStrings.map((_, ci) => <div key={ci} className="w-1.5 h-1.5 rounded-full bg-red-600" />)}
+                {/* Flip container */}
+                <div style={{
+                  transform: `rotate(${wRotation}deg) rotateY(${wFlipped ? 180 : 0}deg)`,
+                  transformStyle: 'preserve-3d',
+                  transition: 'transform 0.5s ease',
+                }}>
+                  {/* Front — Polaroid */}
+                  <div className="bg-[#f5f0e8] p-1.5 pb-12 relative"
+                    style={{
+                      boxShadow: '0 3px 12px rgba(0,0,0,0.5), 0 1px 3px rgba(0,0,0,0.3)',
+                      backfaceVisibility: 'hidden',
+                    }}>
+                    <img
+                      src={`${ASSET_BASE}/images/characters/${w.id}.jpg`}
+                      alt=""
+                      className="w-full h-28 object-cover object-top"
+                      style={{ filter: 'contrast(1.05) saturate(0.85)' }}
+                      onError={(e) => { e.target.style.display = 'none'; }}
+                    />
+                    <div className="absolute bottom-1.5 left-0 right-0 px-2 text-center">
+                      <span className="text-[13px] leading-tight line-clamp-2 block" style={{ fontFamily: "'Caveat', cursive", color: '#2a2218', fontWeight: 600 }}>
+                        {displayName}
+                      </span>
                     </div>
-                  )}
+                    {connectedStrings.length > 0 && (
+                      <div className="absolute top-2 right-2 flex gap-0.5">
+                        {connectedStrings.map((_, ci) => <div key={ci} className="w-1.5 h-1.5 rounded-full bg-red-600" />)}
+                      </div>
+                    )}
+                  </div>
+                  {/* Back — Summary */}
+                  <div className="absolute inset-0 bg-[#f5f0e8] p-3 overflow-hidden"
+                    style={{
+                      boxShadow: '0 3px 12px rgba(0,0,0,0.5), 0 1px 3px rgba(0,0,0,0.3)',
+                      backfaceVisibility: 'hidden',
+                      transform: 'rotateY(180deg)',
+                    }}>
+                    <div className="text-[13px] leading-tight mb-1.5 pb-1 border-b" style={{ fontFamily: "'Caveat', cursive", color: '#2a2218', fontWeight: 600, borderColor: '#d0c8b8' }}>
+                      {displayName}
+                    </div>
+                    <div className="text-[11px] leading-snug" style={{ fontFamily: "'Caveat', cursive", color: '#6a5a4a' }}>
+                      {w.role}
+                    </div>
+                    {summary && (
+                      <div className="mt-1.5 text-[12px] leading-snug overflow-hidden" style={{ fontFamily: "'Caveat', cursive", color: '#4a3a2a' }}>
+                        {summary}
+                      </div>
+                    )}
+                    {!summary && (
+                      <div className="mt-2 text-[11px] italic" style={{ fontFamily: "'Caveat', cursive", color: '#9a8a7a' }}>
+                        Inget samtal ännu...
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             );
