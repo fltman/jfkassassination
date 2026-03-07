@@ -28,6 +28,8 @@ export default function InvestigationBoard({ clues, clueTypes, revealedClueIds, 
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const isPanning = useRef(false);
   const panStart = useRef({ x: 0, y: 0, panX: 0, panY: 0 });
+  const lastTouchDist = useRef(null);
+  const lastTouchCenter = useRef(null);
 
   // Drawing state
   const [tool, setTool] = useState('move'); // move | draw | erase
@@ -354,6 +356,73 @@ export default function InvestigationBoard({ clues, clueTypes, revealedClueIds, 
   const zoomOut = () => setZoom(z => Math.max(0.2, z / 1.2));
   const resetView = () => { setZoom(1); setPan({ x: 0, y: 0 }); };
 
+  // Touch handlers for mobile
+  const getTouchDist = (t1, t2) => Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+  const getTouchCenter = (t1, t2) => ({ x: (t1.clientX + t2.clientX) / 2, y: (t1.clientY + t2.clientY) / 2 });
+
+  const handleTouchStart = useCallback((e) => {
+    if (e.touches.length === 2) {
+      // Pinch start
+      lastTouchDist.current = getTouchDist(e.touches[0], e.touches[1]);
+      lastTouchCenter.current = getTouchCenter(e.touches[0], e.touches[1]);
+      isPanning.current = false;
+      e.preventDefault();
+    } else if (e.touches.length === 1) {
+      const t = e.touches[0];
+      if (!e.target.closest('[data-card]') && !e.target.closest('[data-note]')) {
+        isPanning.current = true;
+        panStart.current = { x: t.clientX, y: t.clientY, panX: pan.x, panY: pan.y };
+        e.preventDefault();
+      }
+    }
+  }, [pan]);
+
+  const handleTouchMove = useCallback((e) => {
+    if (e.touches.length === 2) {
+      // Pinch zoom
+      const dist = getTouchDist(e.touches[0], e.touches[1]);
+      const center = getTouchCenter(e.touches[0], e.touches[1]);
+      if (lastTouchDist.current) {
+        const scale = dist / lastTouchDist.current;
+        const newZoom = Math.max(0.2, Math.min(3, zoom * scale));
+        const container = containerRef.current;
+        if (container) {
+          const rect = container.getBoundingClientRect();
+          const cx = center.x - rect.left;
+          const cy = center.y - rect.top;
+          setPan(p => ({
+            x: cx - (cx - p.x) * (newZoom / zoom),
+            y: cy - (cy - p.y) * (newZoom / zoom),
+          }));
+        }
+        setZoom(newZoom);
+      }
+      // Pan with two fingers
+      if (lastTouchCenter.current) {
+        const dx = center.x - lastTouchCenter.current.x;
+        const dy = center.y - lastTouchCenter.current.y;
+        setPan(p => ({ x: p.x + dx, y: p.y + dy }));
+      }
+      lastTouchDist.current = dist;
+      lastTouchCenter.current = center;
+      e.preventDefault();
+    } else if (e.touches.length === 1 && isPanning.current) {
+      const t = e.touches[0];
+      setPan({
+        x: panStart.current.panX + (t.clientX - panStart.current.x),
+        y: panStart.current.panY + (t.clientY - panStart.current.y),
+      });
+      e.preventDefault();
+    }
+  }, [zoom]);
+
+  const handleTouchEnd = useCallback(() => {
+    isPanning.current = false;
+    lastTouchDist.current = null;
+    lastTouchCenter.current = null;
+    setDragItem(null);
+  }, []);
+
   const repositionAll = () => {
     const updated = {};
     revealedClues.forEach((clue, i) => {
@@ -459,13 +528,16 @@ export default function InvestigationBoard({ clues, clueTypes, revealedClueIds, 
       <div
         ref={containerRef}
         className={`flex-1 overflow-hidden ${cursorClass}`}
-        style={{ backgroundColor: '#0d0d14' }}
+        style={{ backgroundColor: '#0d0d14', touchAction: 'none' }}
         onMouseDown={handleContainerMouseDown}
         onMouseMove={handleContainerMouseMove}
         onMouseUp={handleContainerMouseUp}
         onMouseLeave={handleContainerMouseUp}
         onWheel={handleWheel}
         onDoubleClick={handleDoubleClick}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
       >
         <div
           style={{
@@ -541,6 +613,24 @@ export default function InvestigationBoard({ clues, clueTypes, revealedClueIds, 
                     const dx = Math.abs(e.clientX - start.x);
                     const dy = Math.abs(e.clientY - start.y);
                     if (dx < 4 && dy < 4 && tool === 'move' && !stringMode) {
+                      setFlippedCards(prev => ({ ...prev, [clue.id]: !prev[clue.id] }));
+                    }
+                  }
+                  clickStart.current = null;
+                }}
+                onTouchStart={(e) => {
+                  if (e.touches.length === 1) {
+                    clickStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY, id: clue.id };
+                    e.stopPropagation();
+                  }
+                }}
+                onTouchEnd={(e) => {
+                  const start = clickStart.current;
+                  if (start && start.id === clue.id && e.changedTouches.length === 1) {
+                    const t = e.changedTouches[0];
+                    const dx = Math.abs(t.clientX - start.x);
+                    const dy = Math.abs(t.clientY - start.y);
+                    if (dx < 10 && dy < 10) {
                       setFlippedCards(prev => ({ ...prev, [clue.id]: !prev[clue.id] }));
                     }
                   }
@@ -628,6 +718,24 @@ export default function InvestigationBoard({ clues, clueTypes, revealedClueIds, 
                     const dx = Math.abs(e.clientX - start.x);
                     const dy = Math.abs(e.clientY - start.y);
                     if (dx < 4 && dy < 4 && tool === 'move' && !stringMode) {
+                      setFlippedCards(prev => ({ ...prev, [wKey]: !prev[wKey] }));
+                    }
+                  }
+                  clickStart.current = null;
+                }}
+                onTouchStart={(e) => {
+                  if (e.touches.length === 1) {
+                    clickStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY, id: wKey };
+                    e.stopPropagation();
+                  }
+                }}
+                onTouchEnd={(e) => {
+                  const start = clickStart.current;
+                  if (start && start.id === wKey && e.changedTouches.length === 1) {
+                    const t = e.changedTouches[0];
+                    const dx = Math.abs(t.clientX - start.x);
+                    const dy = Math.abs(t.clientY - start.y);
+                    if (dx < 10 && dy < 10) {
                       setFlippedCards(prev => ({ ...prev, [wKey]: !prev[wKey] }));
                     }
                   }
@@ -730,6 +838,53 @@ export default function InvestigationBoard({ clues, clueTypes, revealedClueIds, 
             </div>
           ))}
         </div>
+      </div>
+
+      {/* Minimap */}
+      <div
+        className="absolute bottom-3 right-3 border border-noir-600 rounded bg-noir-900/90 overflow-hidden cursor-pointer"
+        style={{ width: 160, height: 160 * (BOARD_H / BOARD_W) }}
+        onClick={(e) => {
+          const rect = e.currentTarget.getBoundingClientRect();
+          const mx = (e.clientX - rect.left) / rect.width;
+          const my = (e.clientY - rect.top) / rect.height;
+          const container = containerRef.current;
+          if (!container) return;
+          const cr = container.getBoundingClientRect();
+          setPan({
+            x: -(mx * BOARD_W * zoom - cr.width / 2),
+            y: -(my * BOARD_H * zoom - cr.height / 2),
+          });
+        }}
+      >
+        {/* Card dots */}
+        {revealedClues.map(clue => {
+          const pos = cardPositions[clue.id];
+          if (!pos) return null;
+          return <div key={clue.id} className="absolute w-1.5 h-1.5 rounded-full bg-clue/70" style={{
+            left: `${(pos.x / BOARD_W) * 100}%`, top: `${(pos.y / BOARD_H) * 100}%`,
+          }} />;
+        })}
+        {witnesses.map(w => {
+          const pos = cardPositions[`witness-${w.id}`];
+          if (!pos) return null;
+          return <div key={w.id} className="absolute w-1.5 h-1.5 rounded-full bg-zinc-400/70" style={{
+            left: `${(pos.x / BOARD_W) * 100}%`, top: `${(pos.y / BOARD_H) * 100}%`,
+          }} />;
+        })}
+        {/* Viewport rectangle */}
+        {(() => {
+          const container = containerRef.current;
+          if (!container) return null;
+          const cr = container.getBoundingClientRect();
+          const vx = (-pan.x / zoom) / BOARD_W * 100;
+          const vy = (-pan.y / zoom) / BOARD_H * 100;
+          const vw = (cr.width / zoom) / BOARD_W * 100;
+          const vh = (cr.height / zoom) / BOARD_H * 100;
+          return <div className="absolute border border-white/40 rounded-sm" style={{
+            left: `${vx}%`, top: `${vy}%`, width: `${vw}%`, height: `${vh}%`,
+          }} />;
+        })()}
       </div>
     </div>
   );
