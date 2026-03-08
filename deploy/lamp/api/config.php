@@ -3,10 +3,10 @@
  * Configuration — edit these values for your server
  */
 
-define('DB_HOST', 'localhost');
-define('DB_NAME', 'bjarby_compalme');
-define('DB_USER', 'bjarby_compalme');
-define('DB_PASS', '12qwaszx!!!');
+define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
+define('DB_NAME', getenv('DB_NAME') ?: 'your_database');
+define('DB_USER', getenv('DB_USER') ?: 'your_user');
+define('DB_PASS', getenv('DB_PASS') ?: 'your_password');
 define('OPENROUTER_API_KEY', getenv('OPENROUTER_API_KEY') ?: '');
 define('AI_MODEL', 'anthropic/claude-haiku-4.5');
 
@@ -46,8 +46,8 @@ function callOpenRouter(array $body, ?string $apiKey = null): array {
         CURLOPT_HTTPHEADER => [
             'Content-Type: application/json',
             'Authorization: Bearer ' . $key,
-            'HTTP-Referer: https://mordet-pa-sveavagen.local',
-            'X-Title: Mordet på Sveavägen',
+            'HTTP-Referer: https://jfkassassination.local',
+            'X-Title: JFK Assassination Investigation',
         ],
         CURLOPT_POSTFIELDS => json_encode($body),
         CURLOPT_TIMEOUT => 30,
