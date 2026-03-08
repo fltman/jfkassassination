@@ -54,17 +54,17 @@ router.post('/message', async (req, res) => {
               { role: 'system', content: config.analysisSystemPrompt },
               {
                 role: 'user',
-                content: `Karaktär: ${characterId}
+                content: `Character: ${characterId}
 
-Möjliga ledtrådar som INTE redan är avslöjade:
+Possible clues NOT yet revealed:
 ${unrevealedClues.map(c => `- ${c.clue_id}: ${c.trigger_condition}`).join('\n')}
 
-Redan avslöjade ledtrådar: ${revealedClueIds.join(', ') || 'inga'}
+Already revealed clues: ${revealedClueIds.join(', ') || 'none'}
 
-Senaste meddelanden i konversationen:
+Recent messages in the conversation:
 ${messages.slice(-6).map(m => `${m.role}: ${m.content}`).join('\n')}
 
-Vilka NYA ledtrådar avslöjades i karaktärens senaste svar?`,
+Which NEW clues were revealed in the character's latest response?`,
               },
             ],
           })
@@ -115,11 +115,11 @@ router.post('/summarize', async (req, res) => {
       messages: [
         {
           role: 'system',
-          content: `Du sammanfattar vittnesförhör i en mordutredning. Skriv en sammanfattning (3-5 meningar) av vad detta vittne har berättat. Fokusera på vem vittnet är, vad de sett och vad de vet. Skriv i tredje person. Svara BARA med sammanfattningen, inget annat.`,
+          content: `You summarize witness interviews in a murder investigation. Write a summary (3-5 sentences) of what this witness has told. Focus on who the witness is, what they saw and what they know. Write in third person. Respond ONLY with the summary, nothing else.`,
         },
         {
           role: 'user',
-          content: `Karaktär: ${char.name} (${char.role})\n\nKonversation:\n${messages.slice(-10).map(m => `${m.role === 'user' ? 'Utredare' : char.name}: ${m.content}`).join('\n')}`,
+          content: `Character: ${char.name} (${char.role})\n\nConversation:\n${messages.slice(-10).map(m => `${m.role === 'user' ? 'Investigator' : char.name}: ${m.content}`).join('\n')}`,
         },
       ],
     });
@@ -146,11 +146,11 @@ router.post('/note', async (req, res) => {
       messages: [
         {
           role: 'system',
-          content: `Du är en utredares anteckningsbok. Sammanfatta vittnets uttalande i EN kort mening som en polisanteckning. Skriv i stil med "Vittnet [namn] uppger att...". Var konkret och saklig. Svara BARA med anteckningen.`,
+          content: `You are an investigator's notebook. Summarize the witness statement in ONE short sentence as a police note. Write in the style of "Witness [name] states that...". Be concrete and factual. Respond ONLY with the note.`,
         },
         {
           role: 'user',
-          content: `Vittne: ${characterName}\nUttalande: ${message}`,
+          content: `Witness: ${characterName}\nStatement: ${message}`,
         },
       ],
     });
@@ -168,8 +168,8 @@ async function callOpenRouter(apiKey, body) {
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${apiKey}`,
-      'HTTP-Referer': 'https://mordet-pa-sveavagen.local',
-      'X-Title': 'Mordet på Sveavägen',
+      'HTTP-Referer': 'https://dealey-plaza.local',
+      'X-Title': 'Dealey Plaza: Minutes After',
     },
     body: JSON.stringify(body),
   });

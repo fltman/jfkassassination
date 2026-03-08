@@ -41,7 +41,7 @@ export default function IntroScreen({ onStart, onResume, onDeletePlayer, savedPl
     if (!exists) {
       const updated = [...players, { id: playerId, name: playerName }];
       setPlayers(updated);
-      localStorage.setItem('palme_players', JSON.stringify(updated));
+      localStorage.setItem('jfk_players', JSON.stringify(updated));
     }
     setScanning(false);
     onResume(playerId);
@@ -80,9 +80,9 @@ export default function IntroScreen({ onStart, onResume, onDeletePlayer, savedPl
           (decoded) => {
             try {
               const data = JSON.parse(decoded);
-              if (data.palme_player_id && data.name) {
+              if (data.jfk_player_id && data.name) {
                 stopScanner();
-                handleImportScanned(data.palme_player_id, data.name);
+                handleImportScanned(data.jfk_player_id, data.name);
               }
             } catch {
               // Not valid JSON, ignore
@@ -90,7 +90,7 @@ export default function IntroScreen({ onStart, onResume, onDeletePlayer, savedPl
           },
         );
       } catch (err) {
-        setScanError('Kunde inte starta kameran. Kontrollera behörigheter.');
+        setScanError('Could not start camera. Check permissions.');
         setScanning(false);
       }
     };
@@ -107,28 +107,28 @@ export default function IntroScreen({ onStart, onResume, onDeletePlayer, savedPl
     <div className="h-screen bg-noir-950 relative overflow-hidden">
       <div
         className="fixed inset-0 bg-cover bg-center opacity-60"
-        style={{ backgroundImage: `url('${ASSET_BASE}/images/locations/murder_scene.jpg')` }}
+        style={{ backgroundImage: `url('${ASSET_BASE}/images/locations/dealey_plaza.jpg')` }}
       />
       <div className="fixed inset-0 bg-gradient-to-t from-noir-950 via-noir-950/90 to-noir-950/70" />
       <div className="relative z-10 h-full overflow-y-auto flex flex-col items-center justify-center px-6 py-10 text-center">
 
       <div className="space-y-4 relative z-10" style={{ textShadow: '0 2px 12px rgba(0,0,0,0.8), 0 0 4px rgba(0,0,0,0.6)' }}>
-        <p className="text-3xl md:text-5xl font-serif text-white">STOCKHOLM</p>
-        <p className="text-xl md:text-2xl font-serif text-zinc-400">28 FEBRUARI 1986</p>
-        <p className="text-4xl md:text-6xl font-serif text-blood">23:21</p>
+        <p className="text-3xl md:text-5xl font-serif text-white">DALLAS, TEXAS</p>
+        <p className="text-xl md:text-2xl font-serif text-zinc-400">NOVEMBER 22, 1963</p>
+        <p className="text-4xl md:text-6xl font-serif text-blood">12:30 PM</p>
         <div className="h-4" />
         <p className="text-base md:text-lg font-mono text-zinc-300 max-w-lg">
-          Sveriges statsminister Olof Palme har just blivit skjuten på öppen gata.
+          President John F. Kennedy has just been shot in Dealey Plaza.
         </p>
         <div className="h-4" />
-        <p className="text-base font-mono text-zinc-500">Du anländer till platsen.</p>
+        <p className="text-base font-mono text-zinc-500">You arrive at the scene.</p>
       </div>
 
       <div className="relative z-10 mt-10 flex flex-col items-center gap-4 w-full max-w-sm">
         {/* Saved players */}
         {players.length > 0 && (
           <div className="w-full space-y-2 mb-2">
-            <p className="font-mono text-xs text-zinc-600 uppercase tracking-wider">Fortsätt utredning</p>
+            <p className="font-mono text-xs text-zinc-600 uppercase tracking-wider">Resume investigation</p>
             {players.map(p => (
               <div key={p.id}>
                 <button
@@ -142,14 +142,14 @@ export default function IntroScreen({ onStart, onResume, onDeletePlayer, savedPl
                     <span
                       onClick={(e) => handleShare(e, p)}
                       className="text-zinc-700 hover:text-zinc-300 text-xs font-mono transition-colors opacity-0 group-hover:opacity-100"
-                      title="Dela profil"
+                      title="Share profile"
                     >
                       QR
                     </span>
                     <span
                       onClick={(e) => handleDelete(e, p.id)}
                       className="text-zinc-700 hover:text-blood text-lg transition-colors opacity-0 group-hover:opacity-100"
-                      title="Ta bort"
+                      title="Delete"
                     >
                       &times;
                     </span>
@@ -159,7 +159,7 @@ export default function IntroScreen({ onStart, onResume, onDeletePlayer, savedPl
             ))}
             <div className="flex items-center gap-3 mt-4">
               <div className="flex-1 h-px bg-noir-700" />
-              <span className="font-mono text-xs text-zinc-600">eller</span>
+              <span className="font-mono text-xs text-zinc-600">or</span>
               <div className="flex-1 h-px bg-noir-700" />
             </div>
           </div>
@@ -171,7 +171,7 @@ export default function IntroScreen({ onStart, onResume, onDeletePlayer, savedPl
           value={name}
           onChange={(e) => setName(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleStart()}
-          placeholder="Nytt namn..."
+          placeholder="Enter your name..."
           autoFocus={players.length === 0}
           className="bg-noir-800/80 border border-noir-700 rounded-lg px-4 py-2.5 w-full
                      font-mono text-sm text-zinc-200 placeholder-zinc-600 text-center
@@ -184,13 +184,13 @@ export default function IntroScreen({ onStart, onResume, onDeletePlayer, savedPl
                      hover:bg-blood hover:text-white transition-all duration-300
                      disabled:opacity-30 disabled:cursor-not-allowed"
         >
-          Ny utredning
+          New Investigation
         </button>
 
         {/* API key input */}
         {(needsApiKey && !apiKey) && (
           <div className="w-full bg-noir-800/80 border border-clue/30 rounded-lg p-4 backdrop-blur-sm">
-            <p className="font-mono text-xs text-clue mb-2">OpenRouter API-nyckel krävs</p>
+            <p className="font-mono text-xs text-clue mb-2">OpenRouter API key required</p>
             <input
               type="password"
               value={apiKey}
@@ -202,7 +202,7 @@ export default function IntroScreen({ onStart, onResume, onDeletePlayer, savedPl
               className="w-full bg-noir-900 border border-noir-600 rounded px-3 py-2 font-mono text-xs text-zinc-300 placeholder-zinc-600 focus:outline-none focus:border-clue/50"
             />
             <p className="font-mono text-[10px] text-zinc-600 mt-1.5">
-              Hämta din nyckel på openrouter.ai/keys
+              Get your key at openrouter.ai/keys
             </p>
           </div>
         )}
@@ -214,7 +214,7 @@ export default function IntroScreen({ onStart, onResume, onDeletePlayer, savedPl
               onClick={startScanner}
               className="font-mono text-xs text-zinc-600 hover:text-zinc-400 transition-colors"
             >
-              Skanna QR-kod för att importera profil
+              Scan QR code to import profile
             </button>
           ) : (
             <div className="space-y-2">
@@ -223,7 +223,7 @@ export default function IntroScreen({ onStart, onResume, onDeletePlayer, savedPl
                 onClick={() => setScanning(false)}
                 className="font-mono text-xs text-zinc-600 hover:text-zinc-400 transition-colors"
               >
-                Avbryt
+                Cancel
               </button>
             </div>
           )}
@@ -242,7 +242,7 @@ export default function IntroScreen({ onStart, onResume, onDeletePlayer, savedPl
             className="bg-noir-900 border border-noir-700 rounded-lg p-6 max-w-xs text-center"
             onClick={(e) => e.stopPropagation()}
           >
-            <p className="font-mono text-sm text-zinc-200 mb-1">Radera profil?</p>
+            <p className="font-mono text-sm text-zinc-200 mb-1">Delete profile?</p>
             <p className="font-mono text-xs text-zinc-500 mb-5">
               {players.find(p => p.id === confirmDelete)?.name}
             </p>
@@ -251,13 +251,13 @@ export default function IntroScreen({ onStart, onResume, onDeletePlayer, savedPl
                 onClick={() => setConfirmDelete(null)}
                 className="px-4 py-2 font-mono text-xs text-zinc-400 border border-noir-700 rounded hover:border-zinc-500 transition-colors"
               >
-                Avbryt
+                Cancel
               </button>
               <button
                 onClick={confirmDeletePlayer}
                 className="px-4 py-2 font-mono text-xs text-white bg-blood border border-blood rounded hover:bg-blood/80 transition-colors"
               >
-                Radera
+                Delete
               </button>
             </div>
           </div>
@@ -300,7 +300,7 @@ export default function IntroScreen({ onStart, onResume, onDeletePlayer, savedPl
                   <div className="flex-1 text-left">
                     <p className="text-xs uppercase tracking-[0.3em] mb-4"
                       style={{ color: '#8a7a6a', fontFamily: 'serif' }}>
-                      Stockholmspolisen — Utredningsgruppen
+                      Dallas Police Department — Investigation Unit
                     </p>
                     <p className="text-2xl font-bold tracking-wide mb-1.5"
                       style={{ color: '#2a2218', fontFamily: 'serif' }}>
@@ -308,19 +308,19 @@ export default function IntroScreen({ onStart, onResume, onDeletePlayer, savedPl
                     </p>
                     <p className="text-sm italic mb-5"
                       style={{ color: '#6a5a4a', fontFamily: 'serif' }}>
-                      Privatspanare
+                      Investigator
                     </p>
                     <div className="w-14 h-px mb-3" style={{ background: '#b8a898' }} />
                     <p className="text-[11px]" style={{ color: '#9a8a7a', fontFamily: 'monospace' }}>
-                      Ärende: Mordet på Sveavägen
+                      Case: Dealey Plaza Assassination
                     </p>
                     <p className="text-[11px]" style={{ color: '#9a8a7a', fontFamily: 'monospace' }}>
-                      Datum: 28 feb 1986
+                      Date: Nov 22, 1963
                     </p>
                   </div>
                   <div className="shrink-0 p-3 rounded-sm" style={{ background: 'rgba(255,255,255,0.6)' }}>
                     <QRCodeSVG
-                      value={JSON.stringify({ palme_player_id: p.id, name: p.name })}
+                      value={JSON.stringify({ jfk_player_id: p.id, name: p.name })}
                       size={140}
                       level="M"
                       fgColor="#2a2218"
@@ -333,7 +333,7 @@ export default function IntroScreen({ onStart, onResume, onDeletePlayer, savedPl
                   style={{ background: 'linear-gradient(to right, #5a4a3a, transparent 20%, transparent 80%, #5a4a3a)' }}
                 />
               </div>
-              <p className="text-center font-mono text-xs text-zinc-500 mt-4">Klicka utanför för att stänga</p>
+              <p className="text-center font-mono text-xs text-zinc-500 mt-4">Click outside to close</p>
             </div>
           </div>
         );

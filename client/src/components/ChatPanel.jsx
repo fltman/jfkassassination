@@ -40,7 +40,7 @@ export default function ChatPanel({
   const [input, setInput] = useState('');
   const [notingIndex, setNotingIndex] = useState(null);
   const [panelWidth, setPanelWidth] = useState(() => {
-    const saved = localStorage.getItem('palme_chat_width');
+    const saved = localStorage.getItem('jfk_chat_width');
     return saved ? Number(saved) : 384;
   });
   const [summaryExpanded, setSummaryExpanded] = useState(false);
@@ -61,7 +61,7 @@ export default function ChatPanel({
       isDragging.current = false;
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
-      setPanelWidth(w => { localStorage.setItem('palme_chat_width', String(w)); return w; });
+      setPanelWidth(w => { localStorage.setItem('jfk_chat_width', String(w)); return w; });
     };
     document.addEventListener('mousemove', onMove);
     document.addEventListener('mouseup', onUp);
@@ -135,7 +135,7 @@ export default function ChatPanel({
         type: 'ADD_MESSAGE',
         characterId,
         role: 'assistant',
-        content: 'Karaktären svarar inte just nu. Försök igen.',
+        content: 'The character is not responding right now. Try again.',
       });
     } finally {
       dispatch({ type: 'SET_LOADING', loading: false });
@@ -144,7 +144,7 @@ export default function ChatPanel({
 
   const displayName = nameRevealed
     ? character?.name
-    : (character?.anonymous_name || 'Okänd');
+    : (character?.anonymous_name || 'Unknown');
   const summary = characterSummaries[characterId];
 
   return (
@@ -170,7 +170,7 @@ export default function ChatPanel({
             className="absolute top-3 left-3 text-zinc-300 hover:text-white font-mono text-sm flex items-center gap-1
                        bg-noir-900/60 backdrop-blur-sm px-2 py-1 rounded"
           >
-            &larr; {location?.name || 'Tillbaka'}
+            &larr; {location?.name || 'Back'}
           </button>
         </div>
         <div className="px-4 pb-3 pt-1 border-b border-noir-700">
@@ -184,7 +184,7 @@ export default function ChatPanel({
                 onClick={() => setSummaryExpanded(e => !e)}
                 className="font-mono text-[10px] text-zinc-600 hover:text-zinc-400 mt-0.5"
               >
-                {summaryExpanded ? 'Visa mindre' : 'Visa mer'}
+                {summaryExpanded ? 'Show less' : 'Show more'}
               </button>
             </div>
           )}
@@ -211,7 +211,7 @@ export default function ChatPanel({
               {msg.role === 'assistant' && onAddNote && (
                 <div className="flex justify-end mt-1 opacity-0 group-hover/msg:opacity-100 transition-opacity">
                   {notingIndex === i ? (
-                    <span className="font-mono text-[10px] text-clue animate-pulse">Antecknar...</span>
+                    <span className="font-mono text-[10px] text-clue animate-pulse">Noting...</span>
                   ) : (
                     <button
                       onClick={async () => {
@@ -221,7 +221,7 @@ export default function ChatPanel({
                       }}
                       className="font-mono text-[10px] text-zinc-600 hover:text-zinc-300 transition-colors"
                     >
-                      + Anteckna
+                      + Note
                     </button>
                   )}
                 </div>
@@ -252,7 +252,7 @@ export default function ChatPanel({
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Ställ en fråga..."
+            placeholder="Ask a question..."
             disabled={isLoading}
             autoFocus
             className="flex-1 bg-noir-800 border border-noir-700 rounded-lg px-4 py-2.5
@@ -265,7 +265,7 @@ export default function ChatPanel({
             className="px-4 py-2.5 bg-accent/20 text-accent border border-accent/30 rounded-lg
                        font-mono text-sm hover:bg-accent/30 disabled:opacity-30 transition-colors"
           >
-            Skicka
+            Send
           </button>
         </div>
       </form>

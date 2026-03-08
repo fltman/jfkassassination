@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-"Mordet på Sveavägen" — an interactive web-based investigation game about the assassination of Swedish Prime Minister Olof Palme on February 28, 1986. The player arrives at the crime scene and investigates by talking to AI-powered witnesses via chat.
+"Dealey Plaza: Minutes After" — an interactive web-based investigation game about the assassination of President John F. Kennedy on November 22, 1963. The player arrives at the crime scene moments after the shots and investigates by talking to AI-powered witnesses via chat.
 
 ## Architecture
 
@@ -15,7 +15,7 @@ Full-stack app: Express backend + React frontend + SQLite database.
 - **Frontend:** React 18 + Vite + Tailwind CSS + Leaflet
 - **Database:** SQLite (game data: locations, characters, clues)
 - **AI:** OpenRouter API (`anthropic/claude-haiku-4.5`) proxied through backend
-- **Map tiles:** CartoDB dark (Nordic noir aesthetic)
+- **Map tiles:** CartoDB dark (noir aesthetic)
 - **Fonts:** DM Serif Display (headings), JetBrains Mono (body/chat)
 
 ### Commands
@@ -38,33 +38,42 @@ Every player message triggers **two parallel API calls** via `POST /api/chat/mes
 Both calls happen server-side; the frontend only sees the combined result.
 
 ### State Management
-Client uses `useReducer` (see `client/src/hooks/useGameState.js`). Views: `intro | map | location | chat`. Key state: `unlockedLocationIds`, `revealedClueIds`, `conversations` (per character), `pendingNotifications`.
+Client uses `useReducer` (see `client/src/hooks/useGameState.js`). Views: `intro | map | location | chat | board`. Key state: `unlockedLocationIds`, `revealedClueIds`, `conversations` (per character), `pendingNotifications`.
 
 ### Game Progression
 Clues unlock new map locations. Locations contain characters. Characters reveal clues through conversation. The clue graph is stored in the database (tables: `clues`, `clue_links`, `location_unlock_clues`, `character_clues`).
+
+Starting location: Dealey Plaza (7 characters). Full chain reaches all 16 locations, 22 characters, and 54 clues.
 
 ## Project Structure
 ```
 server/
   index.js              — Express entry point
   routes/api.js         — REST endpoints for locations, characters, clues
-  routes/chat.js        — AI chat proxy (Anthropic API)
-  db/connection.js      — SQLite connection singleton
+  routes/chat.js        — AI chat proxy (dual-call architecture)
+  routes/player.js      — Player state management
+  db/connection.js      — SQLite connection singleton (jfk.db)
   db/schema.js          — Table definitions
-  db/seed.js            — Seeds DB from data/palme_game_data_v2.json
+  db/seed.js            — Seeds DB from data/jfk_game_data.json
 client/
-  src/App.jsx           — Main app, view routing
+  src/App.jsx           — Main app, view routing, toolbar
   src/hooks/useGameState.js — Game state reducer
+  src/hooks/useMusic.js — Soundtrack handler
   src/lib/api.js        — API client functions
   src/components/
-    IntroScreen.jsx     — Cinematic intro with timed text
-    GameMap.jsx         — Leaflet map with dynamic markers
+    IntroScreen.jsx     — Title screen + player management
+    GameMap.jsx         — Leaflet map centered on Dallas [32.78, -96.81]
     LocationPanel.jsx   — Location detail + character list
     ChatPanel.jsx       — AI chat with character
     ClueLog.jsx         — Revealed clues panel
+    InvestigationBoard.jsx — Corkboard with pins/strings/drawing
+    Notebook.jsx        — Searchable text notes
     Notifications.jsx   — Toast notifications for new clues
+    MusicPlayer.jsx     — Volume control
 data/
-  palme_game_data_v2.json — Source game data (used by seed script)
+  jfk_game_data.json    — Source game data (used by seed script)
+fakta/
+  compass_artifact_*.md — Factual research dossier about the JFK assassination
 ```
 
 ## API Endpoints
@@ -75,22 +84,40 @@ data/
 - `GET /api/clue-types` — Clue type definitions
 - `GET /api/config` — AI config (model, prompts)
 - `POST /api/chat/message` — Send message, get response + revealed clues
+- `POST /api/chat/summarize` — AI summary of character conversation
+- `POST /api/chat/note` — Convert witness message to police-style note
+- `POST /api/player` — Create new player
+- `GET /api/player/:id` — Load player state
+- `POST /api/player/:id/state` — Save progress
+- `GET/POST /api/player/:id/board` — Investigation board state
+- `GET/POST /api/player/:id/notebook` — Notes content
 
 ## Database Schema
-Tables: `locations`, `characters`, `clues`, `clue_links`, `location_unlock_clues`, `character_clues`, `clue_types`, `ai_config`. See `server/db/schema.js`.
+Tables: `locations`, `characters`, `clues`, `clue_links`, `location_unlock_clues`, `character_clues`, `clue_types`, `ai_config`, `players`, `player_state`, `player_conversations`, `player_board`, `player_notebook`. See `server/db/schema.js`.
 
-To add new content: either update `data/palme_game_data_v2.json` and run `npm run db:reset`, or insert directly into SQLite.
+To add new content: update `data/jfk_game_data.json` and run `npm run db:reset`, or insert directly into SQLite.
 
 ## Key Files
-- `MORDET_PÅ_SVEAVÄGEN_SPEC.md` — Original game specification (UI design, prompts, clue definitions)
-- `data/palme_game_data_v2.json` — Source game data for seeding
-- `fakta/compass_artifact_*.md` — Factual research dossier about the Palme assassination
+- `data/jfk_game_data.json` — Source game data (16 locations, 22 characters, 54 clues)
+- `fakta/compass_artifact_*.md` — Factual research dossier about the JFK assassination
 
 ## Design
-Nordic noir: dark backgrounds (#0a0a0f), red (#dc2626) for blood/crime, gold (#d97706) for clues, purple (#7c3aed) for contradictions. Colors defined in `client/tailwind.config.js`.
+Noir aesthetic: dark backgrounds (#0a0a0f), red (#dc2626) for blood/crime, gold (#d97706) for clues, purple (#7c3aed) for contradictions. Colors defined in `client/tailwind.config.js`.
 
 ## Language
-All game content and UI text is in **Swedish**. Code and variable names in English.
+All game content and UI text is in **English**. Code and variable names in English.
 
 ## Environment
 Requires `OPENROUTER_API_KEY` in `.env` (see `.env.example`). Model: `anthropic/claude-haiku-4.5` via OpenRouter.
+
+## Game Data Statistics
+| Category | Count |
+|----------|-------|
+| Locations | 16 |
+| Characters | 22 |
+| Clues | 54 |
+| Clue Types | 13 |
+| Starting location | Dealey Plaza (7 witnesses) |
+
+## Key Locations Chain
+Dealey Plaza → TSBD, Grassy Knoll, Triple Underpass, Railroad Tower, Parkland Hospital → Rooming House, Bethesda Naval, Love Field → Tippit Scene → Texas Theatre → Dallas Police HQ → Carousel Club, Camp Street 544, Mexico City → Western Union

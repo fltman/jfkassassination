@@ -42,11 +42,11 @@ function Toast({ notification, locations, onDismiss }) {
       <div className="py-3 pr-4">
         <div className="text-clue flex items-center gap-2">
           <span className="text-base">&#x1f50d;</span>
-          <span>Ny ledtråd: {notification.title}</span>
+          <span>New clue: {notification.title}</span>
         </div>
         {location && (
           <div className="text-zinc-500 text-xs mt-1">
-            Ny plats på kartan: {location.name}
+            New location on map: {location.name}
           </div>
         )}
       </div>

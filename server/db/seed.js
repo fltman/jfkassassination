@@ -3,8 +3,8 @@ const path = require('path');
 const fs = require('fs');
 const SCHEMA = require('./schema');
 
-const DB_PATH = path.join(__dirname, 'palme.db');
-const DATA_PATH = path.join(__dirname, '..', '..', 'data', 'palme_game_data_v2.json');
+const DB_PATH = path.join(__dirname, 'jfk.db');
+const DATA_PATH = path.join(__dirname, '..', '..', 'data', 'jfk_game_data.json');
 
 // Remove existing db
 if (fs.existsSync(DB_PATH)) {
@@ -77,7 +77,7 @@ const insertCharClue = db.prepare(
 );
 
 for (const [id, char] of Object.entries(data.characters)) {
-  insertChar.run(id, char.name, char.anonymousName || 'Okänd', char.role, char.location, char.portrait_mood, char.systemPrompt);
+  insertChar.run(id, char.name, char.anonymousName || 'Unknown', char.role, char.location, char.portrait_mood, char.systemPrompt);
   for (const [clueId, clueData] of Object.entries(char.clues || {})) {
     insertCharClue.run(id, clueId, clueData.triggerCondition, clueData.knowledge || null);
   }

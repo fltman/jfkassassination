@@ -13,7 +13,7 @@ function ExpandableSummary({ text }) {
           onClick={(e) => { e.stopPropagation(); setExpanded(e2 => !e2); }}
           className="font-mono text-[10px] text-zinc-600 hover:text-zinc-400 mt-0.5"
         >
-          {expanded ? 'Visa mindre' : 'Visa mer'}
+          {expanded ? 'Show less' : 'Show more'}
         </button>
       )}
     </div>
@@ -23,7 +23,7 @@ function ExpandableSummary({ text }) {
 export default function LocationPanel({ locationId, locations, revealedNames = [], characterSummaries = {}, onBack, onCharacterClick }) {
   const [characters, setCharacters] = useState([]);
   const [panelWidth, setPanelWidth] = useState(() => {
-    const saved = localStorage.getItem('palme_location_width');
+    const saved = localStorage.getItem('jfk_location_width');
     return saved ? Number(saved) : 384;
   });
   const isDragging = useRef(false);
@@ -48,7 +48,7 @@ export default function LocationPanel({ locationId, locations, revealedNames = [
       isDragging.current = false;
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
-      setPanelWidth(w => { localStorage.setItem('palme_location_width', String(w)); return w; });
+      setPanelWidth(w => { localStorage.setItem('jfk_location_width', String(w)); return w; });
     };
     document.addEventListener('mousemove', onMove);
     document.addEventListener('mouseup', onUp);
@@ -82,7 +82,7 @@ export default function LocationPanel({ locationId, locations, revealedNames = [
           className="absolute top-4 left-4 text-zinc-400 hover:text-zinc-200 font-mono text-sm flex items-center gap-2
                      bg-noir-900/60 backdrop-blur-sm px-2 py-1 rounded"
         >
-          &larr; Kartan
+          &larr; Map
         </button>
       </div>
 
@@ -98,12 +98,12 @@ export default function LocationPanel({ locationId, locations, revealedNames = [
       <div className="p-6 space-y-4">
         {characters.length > 0 && (
           <h3 className="font-mono text-xs uppercase tracking-widest text-zinc-500">
-            Personer på platsen
+            People at this location
           </h3>
         )}
         {characters.map(char => {
           const nameRevealed = revealedNames.includes(char.id);
-          const displayName = nameRevealed ? char.name : (char.anonymous_name || 'Okänd');
+          const displayName = nameRevealed ? char.name : (char.anonymous_name || 'Unknown');
           const summary = characterSummaries[char.id];
 
           return (
@@ -133,7 +133,7 @@ export default function LocationPanel({ locationId, locations, revealedNames = [
 
         {characters.length === 0 && (
           <p className="font-mono text-sm text-zinc-600 italic">
-            Ingen att prata med här just nu.
+            No one to talk to here right now.
           </p>
         )}
       </div>

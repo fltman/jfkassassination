@@ -22,7 +22,9 @@
       "Bash(sqlite3:*)",
       "Bash(do cp:*)",
       "Bash(rm:*)",
-      "Bash(cp:*)"
+      "Bash(cp:*)",
+      "Bash(rsync:*)",
+      "Bash(git remote:*)"
     ]
   }
 }

@@ -1,6 +1,8 @@
 node_modules/
 dist/
-server/db/palme.db-shm
-server/db/palme.db-wal
+server/db/*.db-shm
+server/db/*.db-wal
 .env
 .DS_Store
+client/public/images_backup/
+musik/

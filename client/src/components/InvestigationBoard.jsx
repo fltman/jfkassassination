@@ -469,12 +469,12 @@ export default function InvestigationBoard({ clues, clueTypes, revealedClueIds, 
       {/* Toolbar */}
       <div className="h-12 bg-noir-900 border-b border-noir-700 flex items-center justify-between px-4 shrink-0 relative z-10">
         <div className="flex items-center gap-3">
-          <h2 className="font-serif text-lg text-white">Utredningstavlan</h2>
-          <span className="font-mono text-xs text-zinc-500">{revealedClues.length} ledtrådar · {witnesses.length} vittnen</span>
+          <h2 className="font-serif text-lg text-white">Investigation Board</h2>
+          <span className="font-mono text-xs text-zinc-500">{revealedClues.length} clues · {witnesses.length} witnesses</span>
           <div className="w-px h-6 bg-noir-700" />
-          {toolBtn('move', 'Flytta')}
-          {toolBtn('draw', 'Rita')}
-          {toolBtn('erase', 'Sudda')}
+          {toolBtn('move', 'Move')}
+          {toolBtn('draw', 'Draw')}
+          {toolBtn('erase', 'Erase')}
           {tool === 'draw' && (
             <>
               <div className="flex items-center gap-1.5 ml-1">
@@ -492,10 +492,10 @@ export default function InvestigationBoard({ clues, clueTypes, revealedClueIds, 
                 onChange={(e) => setDrawSize(Number(e.target.value))}
                 className="bg-noir-800 border border-noir-700 text-zinc-400 font-mono text-xs rounded px-1 py-1"
               >
-                <option value="2">Tunn</option>
+                <option value="2">Thin</option>
                 <option value="3">Normal</option>
-                <option value="6">Tjock</option>
-                <option value="12">Bred</option>
+                <option value="6">Thick</option>
+                <option value="12">Wide</option>
               </select>
             </>
           )}
@@ -506,7 +506,7 @@ export default function InvestigationBoard({ clues, clueTypes, revealedClueIds, 
               stringMode ? 'bg-blood/20 border-blood text-blood' : 'bg-noir-800 border-noir-700 text-zinc-400 hover:text-blood'
             }`}
           >
-            {stringMode ? 'Välj ledtråd...' : 'Röd tråd'}
+            {stringMode ? 'Select clue...' : 'Red string'}
           </button>
         </div>
         <div className="flex items-center gap-2">
@@ -514,7 +514,7 @@ export default function InvestigationBoard({ clues, clueTypes, revealedClueIds, 
             onClick={repositionAll}
             className="font-mono text-[10px] text-zinc-500 hover:text-white px-2 py-1 border border-noir-700 rounded bg-noir-800 hover:border-zinc-500 transition-colors"
           >
-            Ordna alla
+            Arrange all
           </button>
           <span className="font-mono text-[10px] text-zinc-600">{Math.round(zoom * 100)}%</span>
           <button onClick={zoomOut} className="w-7 h-7 bg-noir-800 border border-noir-700 rounded text-zinc-400 hover:text-white text-sm">-</button>
@@ -687,7 +687,7 @@ export default function InvestigationBoard({ clues, clueTypes, revealedClueIds, 
             const wKey = `witness-${w.id}`;
             const pos = getPos(wKey, i, 'witness');
             const knownName = (revealedNames || []).includes(w.id);
-            const displayName = knownName ? w.name : (w.anonymous_name || 'Okänd');
+            const displayName = knownName ? w.name : (w.anonymous_name || 'Unknown');
             const summary = (characterSummaries || {})[w.id];
             const isStringTarget = stringMode && stringMode !== wKey && stringMode !== '__select__';
             const isStringSource = stringMode === wKey;
@@ -787,7 +787,7 @@ export default function InvestigationBoard({ clues, clueTypes, revealedClueIds, 
                       </div>
                     ) : (
                       <div className="text-[8px] italic" style={{ fontFamily: "'Caveat', cursive", color: '#9a8a7a' }}>
-                        Inget samtal ännu...
+                        No conversation yet...
                       </div>
                     )}
                   </div>
@@ -831,7 +831,7 @@ export default function InvestigationBoard({ clues, clueTypes, revealedClueIds, 
                     className="font-mono text-[11px] text-noir-950 whitespace-pre-wrap min-h-[20px]"
                     onDoubleClick={(e) => { e.stopPropagation(); setEditingNote(note.id); }}
                   >
-                    {note.text || <span className="text-noir-950/40 italic">Dubbelklicka...</span>}
+                    {note.text || <span className="text-noir-950/40 italic">Double-click...</span>}
                   </div>
                 )}
               </div>

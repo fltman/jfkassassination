@@ -88,7 +88,7 @@ export default function Notebook({ playerId, isOpen, revision = 0, onClose }) {
           <div className="flex items-center gap-2">
             <span className="text-base">📓</span>
             <span className="font-serif text-sm font-bold" style={{ color: '#2a2218' }}>
-              Anteckningar
+              Notebook
             </span>
           </div>
           <button
@@ -106,7 +106,7 @@ export default function Notebook({ playerId, isOpen, revision = 0, onClose }) {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Sök i anteckningar..."
+            placeholder="Search notes..."
             className="w-full outline-none rounded px-2 py-1 text-xs"
             style={{
               background: 'rgba(255,255,255,0.5)',
@@ -124,13 +124,13 @@ export default function Notebook({ playerId, isOpen, revision = 0, onClose }) {
 
           {!loaded ? (
             <div className="flex items-center justify-center h-full">
-              <span style={{ color: '#9a8a7a', fontFamily: 'monospace', fontSize: '12px' }}>Laddar...</span>
+              <span style={{ color: '#9a8a7a', fontFamily: 'monospace', fontSize: '12px' }}>Loading...</span>
             </div>
           ) : isSearching ? (
             <div className="h-full overflow-y-auto p-3 pl-14"
               style={{ fontFamily: 'monospace', fontSize: '13px', lineHeight: '24px', color: '#2a2218' }}>
               {matchingNotes.length === 0 ? (
-                <p style={{ color: '#9a8a7a', fontStyle: 'italic' }}>Inga träffar</p>
+                <p style={{ color: '#9a8a7a', fontStyle: 'italic' }}>No matches</p>
               ) : (
                 matchingNotes.map((note, i) => (
                   <div key={i} className="mb-4 pb-3" style={{ borderBottom: '1px dashed #c8b8a860' }}>
@@ -144,7 +144,7 @@ export default function Notebook({ playerId, isOpen, revision = 0, onClose }) {
               ref={textareaRef}
               value={text}
               onChange={handleChange}
-              placeholder="Skriv dina anteckningar här..."
+              placeholder="Write your notes here..."
               className="w-full h-full resize-none outline-none p-3 pl-14"
               style={{
                 background: 'transparent',
@@ -163,13 +163,13 @@ export default function Notebook({ playerId, isOpen, revision = 0, onClose }) {
         <div className="px-4 py-1.5 flex items-center justify-between border-t" style={{ borderColor: '#c8b8a8' }}>
           {isSearching ? (
             <span style={{ color: '#6a5a4a', fontFamily: 'monospace', fontSize: '10px' }}>
-              {matchingNotes.length} träff{matchingNotes.length !== 1 ? 'ar' : ''}
+              {matchingNotes.length} match{matchingNotes.length !== 1 ? 'es' : ''}
             </span>
           ) : (
             <span />
           )}
           <span style={{ color: '#9a8a7a', fontFamily: 'monospace', fontSize: '10px' }}>
-            Sparas automatiskt
+            Auto-saved
           </span>
         </div>
       </div>

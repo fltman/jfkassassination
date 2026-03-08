@@ -4,13 +4,17 @@ import 'leaflet/dist/leaflet.css';
 
 const MARKER_COLORS = {
   primary: '#dc2626',
+  crime_scene: '#ef4444',
+  suspect_trail: '#d97706',
+  medical: '#e67e22',
+  investigation: '#3b82f6',
+  conspiracy: '#7c3aed',
+  aftermath: '#64748b',
   escape_route: '#ef4444',
   suspect_link: '#d97706',
   origin: '#3b82f6',
   scene_detail: '#71717a',
-  aftermath: '#64748b',
   route: '#2563eb',
-  conspiracy: '#7c3aed',
 };
 
 function createCircleOptions(type, isPrimary) {
@@ -34,8 +38,8 @@ export default function GameMap({ locations, unlockedLocationIds, onLocationClic
     if (mapInstanceRef.current) return;
 
     const map = L.map(mapRef.current, {
-      center: [59.340722, 18.059444],
-      zoom: 16,
+      center: [32.7789, -96.8083],
+      zoom: 15,
       zoomControl: true,
     });
 

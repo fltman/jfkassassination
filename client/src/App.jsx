@@ -12,18 +12,18 @@ import Notifications from './components/Notifications';
 import MusicPlayer from './components/MusicPlayer';
 import Notebook, { appendNote } from './components/Notebook';
 
-const PLAYERS_KEY = 'palme_players';
+const PLAYERS_KEY = 'jfk_players';
 
 // Migrate old single-player localStorage to new format
 (function migrate() {
-  const oldId = localStorage.getItem('palme_player_id');
+  const oldId = localStorage.getItem('jfk_player_id');
   if (oldId) {
     const existing = JSON.parse(localStorage.getItem(PLAYERS_KEY) || '[]');
     if (!existing.some(p => p.id === oldId)) {
-      existing.push({ id: oldId, name: 'Utredare' });
+      existing.push({ id: oldId, name: 'Investigator' });
       localStorage.setItem(PLAYERS_KEY, JSON.stringify(existing));
     }
-    localStorage.removeItem('palme_player_id');
+    localStorage.removeItem('jfk_player_id');
   }
 })();
 
@@ -144,7 +144,7 @@ export default function App() {
   if (!state.dataLoaded) {
     return (
       <div className="h-screen flex items-center justify-center bg-noir-950">
-        <p className="font-mono text-zinc-500 animate-pulse">Laddar...</p>
+        <p className="font-mono text-zinc-500 animate-pulse">Loading...</p>
       </div>
     );
   }
@@ -256,7 +256,7 @@ export default function App() {
                        flex items-center gap-2 px-3 py-1.5 rounded border border-noir-700
                        hover:border-clue/30 bg-noir-800"
           >
-            <span>Ledtrådar</span>
+            <span>Clues</span>
             {state.revealedClueIds.length > 0 && (
               <span className="bg-clue/20 text-clue px-1.5 py-0.5 rounded text-xs">
                 {state.revealedClueIds.length}
@@ -269,7 +269,7 @@ export default function App() {
                        flex items-center gap-2 px-3 py-1.5 rounded border border-noir-700
                        hover:border-zinc-500 bg-noir-800"
           >
-            Anteckningar
+            Notebook
           </button>
           {state.revealedClueIds.length >= 2 && (
             <button
@@ -278,7 +278,7 @@ export default function App() {
                          flex items-center gap-2 px-3 py-1.5 rounded border border-noir-700
                          hover:border-blood/30 bg-noir-800"
             >
-              Utredningstavlan
+              Investigation Board
             </button>
           )}
         </div>
@@ -294,7 +294,7 @@ export default function App() {
             <button
               onClick={() => setSettingsOpen(o => !o)}
               className="text-zinc-500 hover:text-zinc-300 transition-colors"
-              title="Inställningar"
+              title="Settings"
             >
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <circle cx="8" cy="8" r="2.5" />
@@ -304,7 +304,7 @@ export default function App() {
             {settingsOpen && (
               <div className="absolute bottom-full right-0 mb-2 w-72 bg-noir-800 border border-noir-600 rounded-lg p-3 shadow-xl z-50">
                 <label className="block font-mono text-[11px] text-zinc-400 mb-1">
-                  OpenRouter API-nyckel
+                  OpenRouter API Key
                 </label>
                 <input
                   type="password"
@@ -317,7 +317,7 @@ export default function App() {
                   className="w-full bg-noir-900 border border-noir-600 rounded px-2 py-1.5 font-mono text-xs text-zinc-300 placeholder-zinc-600 focus:outline-none focus:border-zinc-500"
                 />
                 <p className="font-mono text-[10px] text-zinc-600 mt-1.5">
-                  Valfritt. Används istället för serverns nyckel.
+                  Optional. Used instead of the server key.
                 </p>
               </div>
             )}
@@ -325,7 +325,7 @@ export default function App() {
           <button
             onClick={toggleFullscreen}
             className="text-zinc-500 hover:text-zinc-300 transition-colors"
-            title={isFullscreen ? 'Avsluta fullskärm' : 'Fullskärm'}
+            title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
           >
             {isFullscreen ? (
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -380,7 +380,7 @@ export default function App() {
               className="w-full flex items-center justify-between px-4 py-3 rounded-lg
                          bg-noir-800 border border-noir-700 active:bg-noir-700"
             >
-              <span className="font-mono text-sm text-zinc-300">Ledtrådar</span>
+              <span className="font-mono text-sm text-zinc-300">Clues</span>
               {state.revealedClueIds.length > 0 && (
                 <span className="bg-clue/20 text-clue px-2 py-0.5 rounded text-xs font-mono">
                   {state.revealedClueIds.length}
@@ -393,7 +393,7 @@ export default function App() {
               className="w-full flex items-center px-4 py-3 rounded-lg
                          bg-noir-800 border border-noir-700 active:bg-noir-700"
             >
-              <span className="font-mono text-sm text-zinc-300">Anteckningar</span>
+              <span className="font-mono text-sm text-zinc-300">Notebook</span>
             </button>
 
             {state.revealedClueIds.length >= 2 && (
@@ -402,12 +402,12 @@ export default function App() {
                 className="w-full flex items-center px-4 py-3 rounded-lg
                            bg-noir-800 border border-noir-700 active:bg-noir-700"
               >
-                <span className="font-mono text-sm text-blood">Utredningstavlan</span>
+                <span className="font-mono text-sm text-blood">Investigation Board</span>
               </button>
             )}
 
             <div className="flex items-center justify-between px-4 py-3 rounded-lg bg-noir-800 border border-noir-700">
-              <span className="font-mono text-sm text-zinc-300">Musik</span>
+              <span className="font-mono text-sm text-zinc-300">Music</span>
               <MusicPlayer
                 muted={music.muted}
                 toggleMute={music.toggleMute}
@@ -423,7 +423,7 @@ export default function App() {
                 className="w-full flex items-center px-4 py-3 rounded-lg
                            bg-noir-800 border border-noir-700 active:bg-noir-700"
               >
-                <span className="font-mono text-sm text-zinc-300">Tillbaka till kartan</span>
+                <span className="font-mono text-sm text-zinc-300">Back to map</span>
               </button>
             )}
           </div>
