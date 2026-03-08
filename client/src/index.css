@@ -62,3 +62,9 @@ body {
 .map-label::before {
   display: none !important;
 }
+
+/* Mobile menu slide-up */
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}

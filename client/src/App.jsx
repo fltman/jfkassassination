@@ -39,6 +39,7 @@ export default function App() {
   const [apiKey, setApiKey] = useState(() => getStoredApiKey());
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [needsApiKey, setNeedsApiKey] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const onChange = () => setIsFullscreen(!!document.fullscreenElement);
@@ -107,6 +108,7 @@ export default function App() {
 
   // Handle start — create new player
   const handleStart = async (playerName) => {
+    setSettingsOpen(false);
     music.switchTrack('intro');
     const player = await createPlayer(playerName);
     const updated = [...savedPlayers, { id: player.id, name: player.name }];
@@ -118,6 +120,7 @@ export default function App() {
 
   // Handle resume — load existing player
   const handleResume = async (playerId) => {
+    setSettingsOpen(false);
     music.switchTrack('intro');
     const player = await loadPlayer(playerId);
     if (player) {
@@ -244,8 +247,8 @@ export default function App() {
         />
       </div>
 
-      {/* Bottom toolbar */}
-      <div className="h-12 bg-noir-900 border-t border-noir-700 flex items-center justify-between px-4 shrink-0 z-30">
+      {/* Desktop bottom toolbar — hidden on mobile */}
+      <div className="hidden md:flex h-12 bg-noir-900 border-t border-noir-700 items-center justify-between px-4 shrink-0 z-30">
         <div className="flex items-center gap-3">
           <button
             onClick={() => setClueLogOpen(o => !o)}
@@ -336,6 +339,96 @@ export default function App() {
           </button>
         </div>
       </div>
+
+      {/* Mobile floating hamburger button */}
+      <div className="md:hidden fixed bottom-4 right-4 z-[70]">
+        <button
+          onClick={() => setMobileMenuOpen(o => !o)}
+          className="w-12 h-12 rounded-full bg-noir-900 border border-noir-600 shadow-xl
+                     flex items-center justify-center text-zinc-300 active:scale-95 transition-transform"
+        >
+          {mobileMenuOpen ? (
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M5 5l10 10M15 5L5 15" />
+            </svg>
+          ) : (
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M3 6h14M3 10h14M3 14h14" />
+            </svg>
+          )}
+          {!mobileMenuOpen && state.revealedClueIds.length > 0 && (
+            <span className="absolute -top-1 -left-1 bg-clue text-noir-950 text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center">
+              {state.revealedClueIds.length}
+            </span>
+          )}
+        </button>
+      </div>
+
+      {/* Mobile slide-up menu */}
+      {mobileMenuOpen && (
+        <div className="md:hidden fixed inset-0 z-[65]" onClick={() => setMobileMenuOpen(false)}>
+          <div className="absolute inset-0 bg-black/50" />
+          <div
+            className="absolute bottom-0 left-0 right-0 bg-noir-900 border-t border-noir-700 rounded-t-2xl p-5 pb-8 space-y-3"
+            onClick={(e) => e.stopPropagation()}
+            style={{ animation: 'slideUp 0.2s ease-out' }}
+          >
+            <div className="w-10 h-1 bg-noir-600 rounded-full mx-auto mb-4" />
+
+            <button
+              onClick={() => { setClueLogOpen(o => !o); setMobileMenuOpen(false); }}
+              className="w-full flex items-center justify-between px-4 py-3 rounded-lg
+                         bg-noir-800 border border-noir-700 active:bg-noir-700"
+            >
+              <span className="font-mono text-sm text-zinc-300">Ledtrådar</span>
+              {state.revealedClueIds.length > 0 && (
+                <span className="bg-clue/20 text-clue px-2 py-0.5 rounded text-xs font-mono">
+                  {state.revealedClueIds.length}
+                </span>
+              )}
+            </button>
+
+            <button
+              onClick={() => { setNotebookOpen(o => !o); setMobileMenuOpen(false); }}
+              className="w-full flex items-center px-4 py-3 rounded-lg
+                         bg-noir-800 border border-noir-700 active:bg-noir-700"
+            >
+              <span className="font-mono text-sm text-zinc-300">Anteckningar</span>
+            </button>
+
+            {state.revealedClueIds.length >= 2 && (
+              <button
+                onClick={() => { dispatch({ type: 'SET_VIEW', view: 'board' }); setMobileMenuOpen(false); }}
+                className="w-full flex items-center px-4 py-3 rounded-lg
+                           bg-noir-800 border border-noir-700 active:bg-noir-700"
+              >
+                <span className="font-mono text-sm text-blood">Utredningstavlan</span>
+              </button>
+            )}
+
+            <div className="flex items-center justify-between px-4 py-3 rounded-lg bg-noir-800 border border-noir-700">
+              <span className="font-mono text-sm text-zinc-300">Musik</span>
+              <MusicPlayer
+                muted={music.muted}
+                toggleMute={music.toggleMute}
+                volume={music.volume}
+                setVolume={music.setVolume}
+                inline
+              />
+            </div>
+
+            {state.currentView !== 'map' && (
+              <button
+                onClick={() => { dispatch({ type: 'SET_VIEW', view: 'map' }); setMobileMenuOpen(false); }}
+                className="w-full flex items-center px-4 py-3 rounded-lg
+                           bg-noir-800 border border-noir-700 active:bg-noir-700"
+              >
+                <span className="font-mono text-sm text-zinc-300">Tillbaka till kartan</span>
+              </button>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -73,11 +73,11 @@ export default function Notebook({ playerId, isOpen, revision = 0, onClose }) {
   if (!isOpen) return null;
 
   return (
-    <div className="absolute left-4 bottom-0 top-0 z-[55] flex items-end pb-4 pointer-events-none">
+    <div className="absolute left-0 md:left-4 bottom-0 top-0 right-0 md:right-auto z-[55] flex items-end pb-4 md:pb-4 pointer-events-none px-2 md:px-0">
       <div
-        className="pointer-events-auto flex flex-col rounded-t-lg border border-noir-700 shadow-2xl overflow-hidden"
+        className="pointer-events-auto flex flex-col rounded-t-lg border border-noir-700 shadow-2xl overflow-hidden w-full md:w-auto"
         style={{
-          width: 340,
+          maxWidth: 340,
           height: 420,
           background: 'linear-gradient(135deg, #f5f0e8 0%, #e8e0d0 40%, #ddd5c5 100%)',
         }}

@@ -55,6 +55,20 @@ export default function IntroScreen({ onStart, onResume, onDeletePlayer, savedPl
   useEffect(() => {
     if (!scanning) return;
     let scanner = null;
+    let stopped = false;
+
+    const stopScanner = async () => {
+      if (stopped || !scanner) return;
+      stopped = true;
+      try {
+        const state = scanner.getState();
+        if (state === 2 || state === 3) { // SCANNING or PAUSED
+          await scanner.stop();
+        }
+      } catch {
+        // already stopped
+      }
+    };
 
     const init = async () => {
       try {
@@ -67,7 +81,7 @@ export default function IntroScreen({ onStart, onResume, onDeletePlayer, savedPl
             try {
               const data = JSON.parse(decoded);
               if (data.palme_player_id && data.name) {
-                scanner.stop().catch(() => {});
+                stopScanner();
                 handleImportScanned(data.palme_player_id, data.name);
               }
             } catch {
@@ -85,7 +99,7 @@ export default function IntroScreen({ onStart, onResume, onDeletePlayer, savedPl
     const t = setTimeout(init, 100);
     return () => {
       clearTimeout(t);
-      if (scanner) scanner.stop().catch(() => {});
+      stopScanner();
     };
   }, [scanning]);
 

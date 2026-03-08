@@ -58,9 +58,9 @@ export default function LocationPanel({ locationId, locations, revealedNames = [
 
   return (
     <div
-      className="absolute right-0 top-0 bottom-0 bg-noir-900/95 backdrop-blur-sm
+      className="absolute right-0 top-0 bottom-0 w-full md:w-auto bg-noir-900/95 backdrop-blur-sm
                   border-l border-noir-700 z-20 flex flex-col animate-slide-in-right overflow-y-auto"
-      style={{ width: panelWidth }}
+      style={{ width: window.innerWidth < 768 ? '100%' : panelWidth }}
     >
       {/* Drag handle */}
       <div
