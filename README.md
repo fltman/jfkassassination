@@ -1,5 +1,7 @@
 # Mordet på Sveavägen
 
+[![Support me on Patreon](https://img.shields.io/badge/Patreon-Support%20my%20work-FF424D?style=flat&logo=patreon&logoColor=white)](https://www.patreon.com/AndersBjarby)
+
 Ett interaktivt utredningsspel om mordet på Olof Palme den 28 februari 1986. Spelaren anländer till brottsplatsen och utreder fallet genom att prata med AI-drivna vittnen.
 
 ![Screenshot](client/public/images/locations/murder_scene.png)
